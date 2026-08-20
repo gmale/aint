@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI·NT</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      max-width: 40rem; margin: 4rem auto; padding: 0 1rem;
+    }
+    h1 { font-weight: 600; }
+    pre {
+      background: rgba(127, 127, 127, .12);
+      padding: 1rem; border-radius: .5rem; overflow-x: auto;
+    }
+    .err { color: #c00; }
+  </style>
+</head>
+<body>
+  <h1>AI·NT</h1>
+  <p>AINT Is Not Transient.</p>
+  <h2>Health</h2>
+  <pre id="health">loading…</pre>
+  <script>
+    fetch("/api/health")
+      .then(r => r.json())
+      .then(d => { document.getElementById("health").textContent = JSON.stringify(d, null, 2); })
+      .catch(e => {
+        const el = document.getElementById("health");
+        el.textContent = "unreachable: " + e;
+        el.className = "err";
+      });
+  </script>
+</body>
+</html>

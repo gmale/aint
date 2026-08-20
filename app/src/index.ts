@@ -7,7 +7,7 @@
  * (decisions/001) without being able to fail on it.
  */
 import { healthReport } from "./health";
-import { workersAiProvider } from "./model";
+import { MODELS, workersAiProvider } from "./model";
 import { checkAction } from "./policy";
 import { counterStub, recordModelCall, recordRequest } from "./telemetry";
 
@@ -57,8 +57,9 @@ async function handleApi(
         return Response.json({ error: decision.reason, policy: decision }, { status: 403 });
       }
       let prompt: unknown;
+      let model: unknown;
       try {
-        ({ prompt } = (await request.json()) as { prompt?: unknown });
+        ({ prompt, model } = (await request.json()) as { prompt?: unknown; model?: unknown });
       } catch {
         return Response.json({ error: "body must be JSON: {\"prompt\": \"...\"}" }, { status: 400 });
       }
@@ -68,7 +69,13 @@ async function handleApi(
           { status: 400 },
         );
       }
-      const provider = workersAiProvider(env);
+      if (model !== undefined && (typeof model !== "string" || !(model in MODELS))) {
+        return Response.json(
+          { error: "model must be one of the verified allowlist", allowed: Object.keys(MODELS) },
+          { status: 400 },
+        );
+      }
+      const provider = workersAiProvider(env, model as string | undefined);
       try {
         const result = await provider.generate({ prompt });
         recordModelCall(env, ctx, {

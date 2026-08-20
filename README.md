@@ -10,7 +10,9 @@ Unlike a coding-agent session, AINT is meant to persist. Agents, models, humans,
 
 ## Status
 
-**Pre-alpha / bootstrap.** The repository currently contains the genesis material for the first implementation.
+**Pre-alpha / bootstrap.** The repository contains the genesis material for the first implementation, plus the V0 substrate under [`app/`](./app/).
+
+Live: <https://aint.aint-app.workers.dev> (health: [`/api/health`](https://aint.aint-app.workers.dev/api/health), telemetry: [`/api/telemetry`](https://aint.aint-app.workers.dev/api/telemetry))
 
 The initial experiment starts on Cloudflare's free tier. AINT must learn what it can build there before it earns a paid capability. The first paid escape hatch is expected to be roughly **$5/month**; the root organization has a long-lived architectural ceiling of **$100/month** unless governance deliberately changes it or a workload is spun into an independent system.
 

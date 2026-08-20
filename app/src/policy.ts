@@ -29,11 +29,28 @@ export interface PolicyDecision {
 }
 
 export const POLICY = {
-  version: "0.1.0",
+  version: "0.2.0",
   economicTier: "free",
   paidActivationForbidden: true,
   allowedActionClasses: ["read", "inference", "storage-write"] satisfies ActionClass[],
+  /**
+   * Lease-lite blast-radius bound for the public inference endpoint
+   * (SECURITY.md §Capability model): at most this many model calls per
+   * UTC day, enforced against the telemetry counters. ~500 calls at the
+   * observed <1 neuron/call stays well under 10% of the 10k-neuron/day
+   * free allocation. True signed capability leases are an M4 concern.
+   */
+  dailyInferenceBudget: 500,
 } as const;
+
+export function checkInferenceBudget(usedToday: number): PolicyDecision {
+  if (usedToday >= POLICY.dailyInferenceBudget) {
+    return deny(
+      `daily inference budget exhausted (${usedToday}/${POLICY.dailyInferenceBudget}); resets 00:00 UTC`,
+    );
+  }
+  return { allowed: true, reason: "within budget", policyVersion: POLICY.version };
+}
 
 export function checkAction(action: ActionRequest): PolicyDecision {
   if (action.paid && POLICY.paidActivationForbidden) {

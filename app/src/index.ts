@@ -8,7 +8,7 @@
  */
 import { healthReport } from "./health";
 import { MODELS, workersAiProvider } from "./model";
-import { checkAction } from "./policy";
+import { checkAction, checkInferenceBudget, POLICY } from "./policy";
 import { counterStub, recordModelCall, recordRequest } from "./telemetry";
 
 export { TelemetryCounters } from "./telemetry";
@@ -55,6 +55,16 @@ async function handleApi(
       const decision = checkAction({ class: "inference", paid: false, detail: "workers-ai" });
       if (!decision.allowed) {
         return Response.json({ error: decision.reason, policy: decision }, { status: 403 });
+      }
+      const usedToday = await counterStub(env)
+        .todayCount("model_calls")
+        .catch(() => Number.MAX_SAFE_INTEGER); // counter unreachable → fail closed
+      const budget = checkInferenceBudget(usedToday);
+      if (!budget.allowed) {
+        return Response.json(
+          { error: budget.reason, policy: budget, budget: POLICY.dailyInferenceBudget },
+          { status: 429 },
+        );
       }
       let prompt: unknown;
       let model: unknown;

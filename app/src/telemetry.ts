@@ -109,6 +109,15 @@ export class TelemetryCounters extends DurableObject {
     return out;
   }
 
+  /** Today's count for one counter key (0 if absent). */
+  todayCount(key: string): number {
+    const day = new Date().toISOString().slice(0, 10);
+    const rows = this.ctx.storage.sql
+      .exec<{ n: number }>("SELECT n FROM counters WHERE day = ? AND key = ?", day, key)
+      .toArray();
+    return rows[0]?.n ?? 0;
+  }
+
   ping(): string {
     return "ok";
   }

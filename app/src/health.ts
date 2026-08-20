@@ -37,7 +37,11 @@ export async function healthReport(origin: string, env: Env) {
     status: ok ? "ok" : "degraded",
     timestamp: new Date().toISOString(),
     version: APP_VERSION,
-    policy: { version: POLICY.version, economicTier: POLICY.economicTier },
+    policy: {
+      version: POLICY.version,
+      economicTier: POLICY.economicTier,
+      dailyInferenceBudget: POLICY.dailyInferenceBudget,
+    },
     build: BUILD_INFO,
     deployment: {
       versionId: meta.id || "unknown",

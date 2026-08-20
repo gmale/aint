@@ -7,6 +7,7 @@
  * be computed live must be reported as unknown, never as healthy.
  */
 import { BUILD_INFO } from "../generated/build-info";
+import { counterStub } from "./telemetry";
 
 export const SERVICE = "aint";
 export const APP_VERSION = "0.1.0";
@@ -19,7 +20,11 @@ interface DependencyReport {
 }
 
 export async function healthReport(origin: string, env: Env) {
-  const dependencies: DependencyReport[] = [await checkAssets(origin, env)];
+  const dependencies: DependencyReport[] = [
+    await checkAssets(origin, env),
+    await checkTelemetryCounters(env),
+    checkAnalyticsEngine(env),
+  ];
   const ok = dependencies.every((d) => d.ok);
 
   const meta = env.CF_VERSION_METADATA;
@@ -59,4 +64,26 @@ async function checkAssets(origin: string, env: Env): Promise<DependencyReport> 
   } catch (e) {
     return { name: "assets", ok: false, latencyMs: Date.now() - start, detail: String(e) };
   }
+}
+
+async function checkTelemetryCounters(env: Env): Promise<DependencyReport> {
+  const start = Date.now();
+  try {
+    const pong = await counterStub(env).ping();
+    return { name: "telemetry_counters", ok: pong === "ok", latencyMs: Date.now() - start };
+  } catch (e) {
+    return { name: "telemetry_counters", ok: false, latencyMs: Date.now() - start, detail: String(e) };
+  }
+}
+
+function checkAnalyticsEngine(env: Env): DependencyReport {
+  // Analytics Engine is write-only from a Worker; "configured" is the
+  // strongest claim this check can honestly make (decisions/001).
+  const configured = typeof env.TELEMETRY_EVENTS?.writeDataPoint === "function";
+  return {
+    name: "analytics_engine",
+    ok: configured,
+    latencyMs: 0,
+    detail: configured ? "write-only binding; configured" : "binding missing",
+  };
 }

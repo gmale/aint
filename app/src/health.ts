@@ -7,6 +7,7 @@
  * be computed live must be reported as unknown, never as healthy.
  */
 import { BUILD_INFO } from "../generated/build-info";
+import { POLICY } from "./policy";
 import { counterStub } from "./telemetry";
 
 export const SERVICE = "aint";
@@ -24,6 +25,7 @@ export async function healthReport(origin: string, env: Env) {
     await checkAssets(origin, env),
     await checkTelemetryCounters(env),
     checkAnalyticsEngine(env),
+    checkWorkersAi(env),
   ];
   const ok = dependencies.every((d) => d.ok);
 
@@ -35,6 +37,7 @@ export async function healthReport(origin: string, env: Env) {
     status: ok ? "ok" : "degraded",
     timestamp: new Date().toISOString(),
     version: APP_VERSION,
+    policy: { version: POLICY.version, economicTier: POLICY.economicTier },
     build: BUILD_INFO,
     deployment: {
       versionId: meta.id || "unknown",
@@ -74,6 +77,18 @@ async function checkTelemetryCounters(env: Env): Promise<DependencyReport> {
   } catch (e) {
     return { name: "telemetry_counters", ok: false, latencyMs: Date.now() - start, detail: String(e) };
   }
+}
+
+function checkWorkersAi(env: Env): DependencyReport {
+  // No live model call from health: that would spend neurons on every
+  // probe (bootstrap/ECONOMICS.md). Config presence is the honest claim.
+  const configured = typeof env.AI?.run === "function";
+  return {
+    name: "workers_ai",
+    ok: configured,
+    latencyMs: 0,
+    detail: configured ? "binding configured; not probed (costs quota)" : "binding missing",
+  };
 }
 
 function checkAnalyticsEngine(env: Env): DependencyReport {

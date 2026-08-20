@@ -46,6 +46,30 @@ async function incrementCounters(env: Env, ev: RequestEvent): Promise<void> {
   await counterStub(env).increment(keys);
 }
 
+export interface ModelCallEvent {
+  model: string;
+  ok: boolean;
+  latencyMs: number;
+  totalTokens: number | null;
+}
+
+export function recordModelCall(env: Env, ctx: ExecutionContext, ev: ModelCallEvent): void {
+  try {
+    env.TELEMETRY_EVENTS.writeDataPoint({
+      blobs: [ev.model, "inference", ev.ok ? "ok" : "error"],
+      doubles: [ev.latencyMs, ev.totalTokens ?? -1],
+      indexes: ["model"],
+    });
+  } catch {
+    // Never fail the request on telemetry.
+  }
+  ctx.waitUntil(
+    counterStub(env)
+      .increment(ev.ok ? ["model_calls"] : ["model_calls", "model_errors"])
+      .catch(() => {}),
+  );
+}
+
 export function counterStub(env: Env) {
   return env.TELEMETRY.get(env.TELEMETRY.idFromName("global"));
 }

@@ -29,6 +29,13 @@ export const MODELS: Record<string, ModelInfo> = {
 
 // Evidence-based default: experiments/001 (5/6 tasks at ~0.2 neurons/call).
 export const DEFAULT_MODEL = "@cf/ibm-granite/granite-4.0-h-micro";
+
+/**
+ * All Workers AI calls route through this AI Gateway for free
+ * request/response logging and analytics (decisions/003). The gateway
+ * must exist in the account or calls fail closed.
+ */
+export const AI_GATEWAY_ID = "aint";
 const NEURONS_PER_USD = 1000 / 0.011;
 const MAX_TOKENS_CAP = 256;
 
@@ -98,10 +105,14 @@ export function workersAiProvider(env: Env, model: string = DEFAULT_MODEL): Mode
       // chat template applied, and raw-prompt continuation produced
       // empty/rambling output for 3 of 5 verified models
       // (experiments/001 run 1).
-      const result = (await env.AI.run(model as Parameters<Env["AI"]["run"]>[0], {
-        messages: [{ role: "user", content: req.prompt }],
-        max_tokens: Math.min(req.maxTokens ?? MAX_TOKENS_CAP, MAX_TOKENS_CAP),
-      })) as Record<string, unknown>;
+      const result = (await env.AI.run(
+        model as Parameters<Env["AI"]["run"]>[0],
+        {
+          messages: [{ role: "user", content: req.prompt }],
+          max_tokens: Math.min(req.maxTokens ?? MAX_TOKENS_CAP, MAX_TOKENS_CAP),
+        },
+        { gateway: { id: AI_GATEWAY_ID } },
+      )) as Record<string, unknown>;
       const usage = (result.usage ?? {}) as { prompt_tokens?: number; completion_tokens?: number };
       const promptTokens = usage.prompt_tokens ?? null;
       const completionTokens = usage.completion_tokens ?? null;

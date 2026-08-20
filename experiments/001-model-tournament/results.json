@@ -1,0 +1,463 @@
+{
+  "base": "https://aint.aint-app.workers.dev",
+  "ranAt": "2026-08-20T05:50:28.941Z",
+  "summary": [
+    {
+      "model": "@cf/ibm-granite/granite-4.0-h-micro",
+      "passes": "5/6",
+      "passCount": 5,
+      "avgLatencyMs": 488,
+      "totalNeurons": 1.08
+    },
+    {
+      "model": "@cf/mistralai/mistral-small-3.1-24b-instruct",
+      "passes": "5/6",
+      "passCount": 5,
+      "avgLatencyMs": 342,
+      "totalNeurons": 8.699
+    },
+    {
+      "model": "@cf/openai/gpt-oss-20b",
+      "passes": "5/6",
+      "passCount": 5,
+      "avgLatencyMs": 879,
+      "totalNeurons": 28.5
+    },
+    {
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "passes": "3/6",
+      "passCount": 3,
+      "avgLatencyMs": 2086,
+      "totalNeurons": 36.626
+    },
+    {
+      "model": "@cf/meta/llama-3.2-1b-instruct",
+      "passes": "1/6",
+      "passCount": 1,
+      "avgLatencyMs": 216,
+      "totalNeurons": 1.603
+    }
+  ],
+  "results": [
+    {
+      "model": "@cf/meta/llama-3.2-1b-instruct",
+      "task": "exact-compliance",
+      "pass": false,
+      "httpStatus": 200,
+      "latencyMs": 176,
+      "usage": {
+        "promptTokens": 23,
+        "completionTokens": 3
+      },
+      "neuronsEstimated": 0.111,
+      "text": "South Korea",
+      "error": null
+    },
+    {
+      "model": "@cf/meta/llama-3.2-1b-instruct",
+      "task": "factual",
+      "pass": false,
+      "httpStatus": 200,
+      "latencyMs": 152,
+      "usage": {
+        "promptTokens": 25,
+        "completionTokens": 3
+      },
+      "neuronsEstimated": 0.116,
+      "text": "Melbourne",
+      "error": null
+    },
+    {
+      "model": "@cf/meta/llama-3.2-1b-instruct",
+      "task": "trap-arithmetic",
+      "pass": false,
+      "httpStatus": 200,
+      "latencyMs": 166,
+      "usage": {
+        "promptTokens": 37,
+        "completionTokens": 2
+      },
+      "neuronsEstimated": 0.127,
+      "text": "8",
+      "error": null
+    },
+    {
+      "model": "@cf/meta/llama-3.2-1b-instruct",
+      "task": "json-output",
+      "pass": false,
+      "httpStatus": 200,
+      "latencyMs": 308,
+      "usage": {
+        "promptTokens": 46,
+        "completionTokens": 27
+      },
+      "neuronsEstimated": 0.604,
+      "text": "Here is the JSON object:\n\n\n{\n  \"name\": \"AINT\",\n  \"version\": 0\n}",
+      "error": null
+    },
+    {
+      "model": "@cf/meta/llama-3.2-1b-instruct",
+      "task": "constrained-list",
+      "pass": false,
+      "httpStatus": 200,
+      "latencyMs": 258,
+      "usage": {
+        "promptTokens": 29,
+        "completionTokens": 8
+      },
+      "neuronsEstimated": 0.217,
+      "text": "Edge Grid, Stacks, CDN",
+      "error": null
+    },
+    {
+      "model": "@cf/meta/llama-3.2-1b-instruct",
+      "task": "brevity",
+      "pass": true,
+      "httpStatus": 200,
+      "latencyMs": 236,
+      "usage": {
+        "promptTokens": 56,
+        "completionTokens": 16
+      },
+      "neuronsEstimated": 0.428,
+      "text": "Cloudflare's AINT project automates AI-driven discussion organization and improvement.",
+      "error": null
+    },
+    {
+      "model": "@cf/ibm-granite/granite-4.0-h-micro",
+      "task": "exact-compliance",
+      "pass": true,
+      "httpStatus": 200,
+      "latencyMs": 297,
+      "usage": {
+        "promptTokens": 42,
+        "completionTokens": 4
+      },
+      "neuronsEstimated": 0.105,
+      "text": "AINT lives",
+      "error": null
+    },
+    {
+      "model": "@cf/ibm-granite/granite-4.0-h-micro",
+      "task": "factual",
+      "pass": true,
+      "httpStatus": 200,
+      "latencyMs": 220,
+      "usage": {
+        "promptTokens": 44,
+        "completionTokens": 3
+      },
+      "neuronsEstimated": 0.098,
+      "text": "Canberra",
+      "error": null
+    },
+    {
+      "model": "@cf/ibm-granite/granite-4.0-h-micro",
+      "task": "trap-arithmetic",
+      "pass": true,
+      "httpStatus": 200,
+      "latencyMs": 186,
+      "usage": {
+        "promptTokens": 56,
+        "completionTokens": 2
+      },
+      "neuronsEstimated": 0.107,
+      "text": "9",
+      "error": null
+    },
+    {
+      "model": "@cf/ibm-granite/granite-4.0-h-micro",
+      "task": "json-output",
+      "pass": true,
+      "httpStatus": 200,
+      "latencyMs": 555,
+      "usage": {
+        "promptTokens": 65,
+        "completionTokens": 18
+      },
+      "neuronsEstimated": 0.28,
+      "text": "{\n  \"name\": \"AINT\",\n  \"version\": 0\n}",
+      "error": null
+    },
+    {
+      "model": "@cf/ibm-granite/granite-4.0-h-micro",
+      "task": "constrained-list",
+      "pass": false,
+      "httpStatus": 200,
+      "latencyMs": 484,
+      "usage": {
+        "promptTokens": 48,
+        "completionTokens": 14
+      },
+      "neuronsEstimated": 0.214,
+      "text": "Cloudflare Workers KV, Cloudflare R2, Cloudflare Storage",
+      "error": null
+    },
+    {
+      "model": "@cf/ibm-granite/granite-4.0-h-micro",
+      "task": "brevity",
+      "pass": true,
+      "httpStatus": 200,
+      "latencyMs": 1183,
+      "usage": {
+        "promptTokens": 75,
+        "completionTokens": 16
+      },
+      "neuronsEstimated": 0.276,
+      "text": "AINT builds persistent, secure, cost-effective AI agents on Cloudflare.",
+      "error": null
+    },
+    {
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "task": "exact-compliance",
+      "pass": true,
+      "httpStatus": 200,
+      "latencyMs": 757,
+      "usage": {
+        "promptTokens": 20,
+        "completionTokens": 115
+      },
+      "neuronsEstimated": 3.647,
+      "text": "AINT lives",
+      "error": null
+    },
+    {
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "task": "factual",
+      "pass": true,
+      "httpStatus": 200,
+      "latencyMs": 1489,
+      "usage": {
+        "promptTokens": 22,
+        "completionTokens": 140
+      },
+      "neuronsEstimated": 4.429,
+      "text": "Canberra",
+      "error": null
+    },
+    {
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "task": "trap-arithmetic",
+      "pass": false,
+      "httpStatus": 200,
+      "latencyMs": 2460,
+      "usage": {
+        "promptTokens": 35,
+        "completionTokens": 256
+      },
+      "neuronsEstimated": 8.075,
+      "text": "",
+      "error": null
+    },
+    {
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "task": "json-output",
+      "pass": true,
+      "httpStatus": 200,
+      "latencyMs": 1513,
+      "usage": {
+        "promptTokens": 43,
+        "completionTokens": 132
+      },
+      "neuronsEstimated": 4.279,
+      "text": "{\"name\": \"AINT\", \"version\": 0}",
+      "error": null
+    },
+    {
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "task": "constrained-list",
+      "pass": false,
+      "httpStatus": 200,
+      "latencyMs": 3245,
+      "usage": {
+        "promptTokens": 26,
+        "completionTokens": 256
+      },
+      "neuronsEstimated": 8.033,
+      "text": "",
+      "error": null
+    },
+    {
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "task": "brevity",
+      "pass": false,
+      "httpStatus": 200,
+      "latencyMs": 3051,
+      "usage": {
+        "promptTokens": 54,
+        "completionTokens": 256
+      },
+      "neuronsEstimated": 8.163,
+      "text": "",
+      "error": null
+    },
+    {
+      "model": "@cf/openai/gpt-oss-20b",
+      "task": "exact-compliance",
+      "pass": true,
+      "httpStatus": 200,
+      "latencyMs": 598,
+      "usage": {
+        "promptTokens": 81,
+        "completionTokens": 105
+      },
+      "neuronsEstimated": 4.336,
+      "text": "AINT lives",
+      "error": null
+    },
+    {
+      "model": "@cf/openai/gpt-oss-20b",
+      "task": "factual",
+      "pass": true,
+      "httpStatus": 200,
+      "latencyMs": 276,
+      "usage": {
+        "promptTokens": 83,
+        "completionTokens": 48
+      },
+      "neuronsEstimated": 2.818,
+      "text": "Canberra",
+      "error": null
+    },
+    {
+      "model": "@cf/openai/gpt-oss-20b",
+      "task": "trap-arithmetic",
+      "pass": true,
+      "httpStatus": 200,
+      "latencyMs": 594,
+      "usage": {
+        "promptTokens": 95,
+        "completionTokens": 67
+      },
+      "neuronsEstimated": 3.555,
+      "text": "9",
+      "error": null
+    },
+    {
+      "model": "@cf/openai/gpt-oss-20b",
+      "task": "json-output",
+      "pass": true,
+      "httpStatus": 200,
+      "latencyMs": 601,
+      "usage": {
+        "promptTokens": 104,
+        "completionTokens": 44
+      },
+      "neuronsEstimated": 3.091,
+      "text": "{\"name\":\"AINT\",\"version\":0}",
+      "error": null
+    },
+    {
+      "model": "@cf/openai/gpt-oss-20b",
+      "task": "constrained-list",
+      "pass": true,
+      "httpStatus": 200,
+      "latencyMs": 1713,
+      "usage": {
+        "promptTokens": 87,
+        "completionTokens": 149
+      },
+      "neuronsEstimated": 5.645,
+      "text": "R2, Workers KV, Durable Objects",
+      "error": null
+    },
+    {
+      "model": "@cf/openai/gpt-oss-20b",
+      "task": "brevity",
+      "pass": false,
+      "httpStatus": 200,
+      "latencyMs": 1494,
+      "usage": {
+        "promptTokens": 114,
+        "completionTokens": 256
+      },
+      "neuronsEstimated": 9.055,
+      "text": "",
+      "error": null
+    },
+    {
+      "model": "@cf/mistralai/mistral-small-3.1-24b-instruct",
+      "task": "exact-compliance",
+      "pass": true,
+      "httpStatus": 200,
+      "latencyMs": 132,
+      "usage": {
+        "promptTokens": 15,
+        "completionTokens": 4
+      },
+      "neuronsEstimated": 0.681,
+      "text": "AINT lives",
+      "error": null
+    },
+    {
+      "model": "@cf/mistralai/mistral-small-3.1-24b-instruct",
+      "task": "factual",
+      "pass": true,
+      "httpStatus": 200,
+      "latencyMs": 329,
+      "usage": {
+        "promptTokens": 17,
+        "completionTokens": 3
+      },
+      "neuronsEstimated": 0.694,
+      "text": "Canberra",
+      "error": null
+    },
+    {
+      "model": "@cf/mistralai/mistral-small-3.1-24b-instruct",
+      "task": "trap-arithmetic",
+      "pass": false,
+      "httpStatus": 200,
+      "latencyMs": 191,
+      "usage": {
+        "promptTokens": 30,
+        "completionTokens": 2
+      },
+      "neuronsEstimated": 1.056,
+      "text": "8",
+      "error": null
+    },
+    {
+      "model": "@cf/mistralai/mistral-small-3.1-24b-instruct",
+      "task": "json-output",
+      "pass": true,
+      "httpStatus": 200,
+      "latencyMs": 548,
+      "usage": {
+        "promptTokens": 38,
+        "completionTokens": 22
+      },
+      "neuronsEstimated": 2.329,
+      "text": "{\n  \"name\": \"AINT\",\n  \"version\": 0\n}",
+      "error": null
+    },
+    {
+      "model": "@cf/mistralai/mistral-small-3.1-24b-instruct",
+      "task": "constrained-list",
+      "pass": true,
+      "httpStatus": 200,
+      "latencyMs": 313,
+      "usage": {
+        "promptTokens": 22,
+        "completionTokens": 10
+      },
+      "neuronsEstimated": 1.209,
+      "text": "R2, Durable Objects, Workers KV",
+      "error": null
+    },
+    {
+      "model": "@cf/mistralai/mistral-small-3.1-24b-instruct",
+      "task": "brevity",
+      "pass": true,
+      "httpStatus": 200,
+      "latencyMs": 540,
+      "usage": {
+        "promptTokens": 49,
+        "completionTokens": 23
+      },
+      "neuronsEstimated": 2.73,
+      "text": "The AINT project creates a self-improving, cost-efficient, secure agent organization on Cloudflare.",
+      "error": null
+    }
+  ]
+}

@@ -27,7 +27,8 @@ export const MODELS: Record<string, ModelInfo> = {
   "@cf/mistralai/mistral-small-3.1-24b-instruct": { inPerM: 0.35, outPerM: 0.56 },
 };
 
-export const DEFAULT_MODEL = "@cf/meta/llama-3.2-1b-instruct";
+// Evidence-based default: experiments/001 (5/6 tasks at ~0.2 neurons/call).
+export const DEFAULT_MODEL = "@cf/ibm-granite/granite-4.0-h-micro";
 const NEURONS_PER_USD = 1000 / 0.011;
 const MAX_TOKENS_CAP = 256;
 

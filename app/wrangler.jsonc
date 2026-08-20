@@ -3,6 +3,12 @@
   "name": "aint",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-01",
+  "build": {
+    "command": "node scripts/gen-build-info.mjs"
+  },
+  "version_metadata": {
+    "binding": "CF_VERSION_METADATA"
+  },
   "assets": {
     "directory": "./public",
     "binding": "ASSETS"

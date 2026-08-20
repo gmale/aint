@@ -5,9 +5,7 @@
  * routes under /api/* are handled by the Worker; everything else
  * falls through to static assets.
  */
-
-const SERVICE = "aint";
-const VERSION = "0.0.1";
+import { healthReport } from "./health";
 
 export default {
   async fetch(request, env): Promise<Response> {
@@ -19,17 +17,12 @@ export default {
   },
 } satisfies ExportedHandler<Env>;
 
-function handleApi(url: URL, _request: Request, _env: Env): Response {
+async function handleApi(url: URL, _request: Request, env: Env): Promise<Response> {
   switch (url.pathname) {
-    case "/api/health":
-      // Minimal V0.2 health; build identity and dependency
-      // reachability land with V0.3 (issue #3).
-      return Response.json({
-        service: SERVICE,
-        version: VERSION,
-        status: "ok",
-        timestamp: new Date().toISOString(),
-      });
+    case "/api/health": {
+      const report = await healthReport(url.origin, env);
+      return Response.json(report, { status: report.status === "ok" ? 200 : 503 });
+    }
     default:
       return Response.json({ error: "not found" }, { status: 404 });
   }

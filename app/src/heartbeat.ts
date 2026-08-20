@@ -24,6 +24,8 @@ export async function runScheduled(
 ): Promise<void> {
   const stub = counterStub(env);
   if (controller.cron === DAILY_CRON) {
+    const { reconcile } = await import("./reconcile");
+    await reconcile(env).catch(() => {});
     await dailyReport(env, ctx);
     return;
   }

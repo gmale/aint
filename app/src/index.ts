@@ -118,6 +118,16 @@ async function handleApi(
         return Response.json({ error: "model call failed" }, { status: 502 });
       }
     }
+    case "/api/reconcile": {
+      const { probe, reconcile, recentlyReconciled } = await import("./reconcile");
+      if (url.searchParams.has("probe")) {
+        return Response.json(await probe(env, url.searchParams.get("probe") || null));
+      }
+      if (await recentlyReconciled(env)) {
+        return Response.json({ skipped: "reconciled within the last 5 minutes; see /api/events" }, { status: 429 });
+      }
+      return Response.json(await reconcile(env));
+    }
     case "/api/events": {
       const events = await counterStub(env).listEvents(50);
       return Response.json({ events });

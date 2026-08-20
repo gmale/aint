@@ -12,7 +12,8 @@ export type ActionClass =
   | "read" // read-only; consumes nothing beyond the request
   | "inference" // model call within verified free quota
   | "storage-write" // durable state mutation (DO/D1/KV/R2)
-  | "external-call" // outbound call to a non-Cloudflare service
+  | "platform-read" // read-only call to our own platform provider's API (api.cloudflare.com) with scoped credentials
+  | "external-call" // outbound call to any other external service — still forbidden
   | "resource-provision"; // creating/altering platform resources
 
 export interface ActionRequest {
@@ -29,10 +30,14 @@ export interface PolicyDecision {
 }
 
 export const POLICY = {
-  version: "0.2.0",
+  // 0.3.0: added platform-read (decisions/005) — telemetry
+  // reconciliation against provider truth requires reading our own
+  // account's analytics API. Deliberately distinct from external-call,
+  // which remains forbidden.
+  version: "0.3.0",
   economicTier: "free",
   paidActivationForbidden: true,
-  allowedActionClasses: ["read", "inference", "storage-write"] satisfies ActionClass[],
+  allowedActionClasses: ["read", "inference", "storage-write", "platform-read"] satisfies ActionClass[],
   /**
    * Lease-lite blast-radius bound for the public inference endpoint
    * (SECURITY.md §Capability model): at most this many model calls per

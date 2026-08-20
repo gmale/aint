@@ -33,11 +33,12 @@ why it was needed, its scope, and how V1+ should reduce it. Last updated: 2026-0
 - **Risk:** owner absence or compromise affects everything; no second identity exists.
 - **Reduction:** V1 M4 should define owner-absence behavior and consider recovery paths; child systems get independent identities (`bootstrap/VISION.md`).
 
-## D5 — Deliberately unprovisioned: Analytics Engine read token
+## D5 — Analytics read token (provisioned 2026-08-21 as a lease)
 
-- **Authority:** none (this is an anti-debt entry).
-- **Why:** reading AE from the Worker requires an API token secret; V0 avoided its first durable secret by serving reads from the counters DO instead (decisions/001).
-- **Reduction:** when Console (M1) needs richer queries, provision a minimal read-only token as a governed secret via `wrangler secret put` — never in source.
+- **Authority:** `CF_ANALYTICS_TOKEN` Worker secret — "Read analytics and logs" template scope, account-limited, **expires ~2026-12-19** (120-day lease chosen by the human deliberately; renewal is an explicit decision, not an automatic event).
+- **Why:** anti-Goodhart neuron reconciliation (#13, decisions/005). First durable secret; entered via `wrangler secret put` in a separate terminal — never chat, repo, or logs.
+- **Risk:** read-only observability exposure on compromise, bounded by expiry.
+- **Renewal watch:** reconciliation will start failing with auth errors near expiry — the `query-error` events are the tripwire. Decide renewal (or retire the capability) before 2026-12-19.
 
 ## D6 — Single production environment
 

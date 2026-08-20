@@ -40,7 +40,7 @@ See `decisions/BOOTSTRAP_DEBT.md` D1–D6. No durable secrets exist in source, p
 
 ### Resource usage observed
 
-Rounding error on every quota: single-digit requests/day, 3 model calls (~200 neurons total), 3 builds (≈3 build-minutes), storage a few KB. $0 spent; no paid activation.
+Rounding error on every quota: single-digit requests/day, 3 model calls (≈1 neuron total — e.g. the 77-token production call ≈0.31 neurons: 69 input × $0.027/M + 8 output × $0.20/M = $0.0000035 ÷ $0.011-per-1,000-neurons), 3+ builds (a few build-minutes), storage a few KB. $0 spent; no paid activation. *(Corrected 2026-08-20: an earlier revision estimated "~200 neurons" without doing the arithmetic.)*
 
 ### Security/bootstrap debts
 

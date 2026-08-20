@@ -61,6 +61,24 @@ export interface ModelProvider {
   generate(req: GenerateRequest): Promise<GenerateResult>;
 }
 
+/**
+ * Workers AI response shapes vary by model family: most return
+ * `{response: string}`, gpt-oss returns an OpenAI-responses-style
+ * `{output: [{type: "message", content: [{text}]}]}`.
+ */
+function extractText(result: Record<string, unknown>): string {
+  if (typeof result.response === "string") return result.response;
+  if (Array.isArray(result.output)) {
+    return result.output
+      .filter((item): item is { type?: string; content?: unknown } => typeof item === "object" && item !== null)
+      .filter((item) => item.type === "message" && Array.isArray(item.content))
+      .flatMap((item) => item.content as Array<{ text?: unknown }>)
+      .map((part) => (typeof part.text === "string" ? part.text : ""))
+      .join("");
+  }
+  return "";
+}
+
 export function workersAiProvider(env: Env, model: string = DEFAULT_MODEL): ModelProvider {
   if (!(model in MODELS)) {
     throw new Error(`model not in verified allowlist: ${model}`);
@@ -69,14 +87,19 @@ export function workersAiProvider(env: Env, model: string = DEFAULT_MODEL): Mode
     model,
     async generate(req: GenerateRequest): Promise<GenerateResult> {
       const start = Date.now();
+      // Chat-messages input, not raw prompt: instruct models need their
+      // chat template applied, and raw-prompt continuation produced
+      // empty/rambling output for 3 of 5 verified models
+      // (experiments/001 run 1).
       const result = (await env.AI.run(model as Parameters<Env["AI"]["run"]>[0], {
-        prompt: req.prompt,
+        messages: [{ role: "user", content: req.prompt }],
         max_tokens: Math.min(req.maxTokens ?? MAX_TOKENS_CAP, MAX_TOKENS_CAP),
-      })) as { response?: string; usage?: { prompt_tokens?: number; completion_tokens?: number } };
-      const promptTokens = result.usage?.prompt_tokens ?? null;
-      const completionTokens = result.usage?.completion_tokens ?? null;
+      })) as Record<string, unknown>;
+      const usage = (result.usage ?? {}) as { prompt_tokens?: number; completion_tokens?: number };
+      const promptTokens = usage.prompt_tokens ?? null;
+      const completionTokens = usage.completion_tokens ?? null;
       return {
-        text: result.response ?? "",
+        text: extractText(result),
         model,
         latencyMs: Date.now() - start,
         usage: { promptTokens, completionTokens },

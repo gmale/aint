@@ -62,12 +62,18 @@ export interface ModelProvider {
 }
 
 /**
- * Workers AI response shapes vary by model family: most return
- * `{response: string}`, gpt-oss returns an OpenAI-responses-style
- * `{output: [{type: "message", content: [{text}]}]}`.
+ * Workers AI response shapes vary by model family (experiments/001):
+ * llama returns `{response: string}`; granite/gpt-oss/qwen return
+ * OpenAI chat-completions `{choices: [{message: {content}}]}` (with
+ * reasoning in a separate field); responses-style `{output: [...]}`
+ * kept as a fallback.
  */
 function extractText(result: Record<string, unknown>): string {
   if (typeof result.response === "string") return result.response;
+  if (Array.isArray(result.choices)) {
+    const message = (result.choices[0] as { message?: { content?: unknown } } | undefined)?.message;
+    if (typeof message?.content === "string") return message.content;
+  }
   if (Array.isArray(result.output)) {
     return result.output
       .filter((item): item is { type?: string; content?: unknown } => typeof item === "object" && item !== null)

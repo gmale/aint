@@ -18,12 +18,13 @@ why it was needed, its scope, and how V1+ should reduce it. Last updated: 2026-0
 - **Risk:** laptop compromise = production Worker deploy/delete authority.
 - **Reduction:** canonical deploys now flow through Workers Builds (#7). Token remains break-glass only; V1 should decide whether to revoke or formally scope it.
 
-## D3 — Repo write implies production deploy
+## D3 — Repo write implies production deploy (partially reduced 2026-08-21)
 
 - **Authority:** Cloudflare GitHub App watches `main` of `gmale/aint`, path `app/`; any push to `main` builds and deploys to production.
 - **Why:** V0's accepted simplification (`bootstrap/ARCHITECTURE.md` §Source is not deployment authority).
-- **Risk:** a compromised GitHub account or approved-but-malicious commit deploys immediately. No branch protection is configured on `main`.
-- **Reduction:** V1 M3/M4 — branch protection + PR evidence path, then artifact promotion so merge ≠ deploy.
+- **Reduced (issue #12):** branch protection on `main` — PRs required, 1 approving review, force pushes blocked. Non-admin write access no longer deploys directly.
+- **Remaining risk:** "Do not allow bypassing" is off, so the admin credential (D1) can still push `main` directly and can admin-merge unapproved PRs — the laptop token retains full deploy authority. Also: 1-required-approval + a single human identity means agent PRs cannot merge without either human approval (blocks the autonomous loop) or admin bypass (defeats the control).
+- **Further reduction:** near-term, decide between (a) approvals=0 + bypass disallowed — every change gets a PR evidence trail and direct pushes truly reject, autonomy preserved; or (b) keep 1 approval and accept human-gated merges until M3/M4 policy machinery (risk-classed autonomous merge, second identity) exists. Long-term: artifact promotion so merge ≠ deploy.
 
 ## D4 — Human-held platform accounts
 

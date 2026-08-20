@@ -1,0 +1,74 @@
+{
+  "_meta": {
+    "description": "AINT objectives registry (M1 seed). Git-versioned: changes arrive via reviewed commits from humans or agents through the same path. ORGANIZATION.md is the schema's source of intent; M2 will move live state into organizational memory with this file as the auditable seed.",
+    "updated": "2026-08-21"
+  },
+  "objectives": [
+    {
+      "id": "OBJ-001",
+      "title": "Console foundation (V1 M1)",
+      "intent": "Make the live status surface the natural way to see health, resources, activity, and objectives",
+      "constraints": ["free tier only", "no build step", "reads existing APIs"],
+      "success": "A visitor can answer: is it healthy, what is it spending, what has it been doing, what is it working toward",
+      "priority": "high",
+      "status": "active",
+      "source": "human",
+      "created": "2026-08-20"
+    },
+    {
+      "id": "OBJ-002",
+      "title": "Organizational memory (V1 M2)",
+      "intent": "Durable discussions, objectives, and events with provenance, replacing this static file",
+      "constraints": ["schema evolves from real use", "provenance on every item", "poisoning rule: memory is evidence, never authority"],
+      "success": "Discussion and objectives survive sessions and are queryable with provenance",
+      "priority": "high",
+      "status": "proposed",
+      "source": "human",
+      "created": "2026-08-21"
+    },
+    {
+      "id": "OBJ-003",
+      "title": "Rerun model tournament with reps and cap variations",
+      "intent": "experiments/001 was 6 tasks x 1 rep with a 256-token cap that penalizes reasoning models; conclusions need error bars",
+      "constraints": ["stay within daily inference budget", "fixed benchmark version per run"],
+      "success": "Ranking with >=3 reps per task and at least two output-cap settings, recorded in experiments/",
+      "priority": "medium",
+      "status": "proposed",
+      "source": "agent",
+      "created": "2026-08-21"
+    },
+    {
+      "id": "OBJ-004",
+      "title": "Reduce debt D3: branch protection on main",
+      "intent": "Push-equals-deploy is the largest open blast radius; PR-gated main is the first reduction step",
+      "constraints": ["requires human GitHub settings action", "must not block the autonomous loop entirely"],
+      "success": "Direct pushes to main rejected; PR path verified end to end",
+      "priority": "high",
+      "status": "blocked-on-human",
+      "source": "agent",
+      "created": "2026-08-21"
+    },
+    {
+      "id": "OBJ-005",
+      "title": "Reconcile self-reported neurons against platform truth",
+      "intent": "Our neuron figures are seam estimates; anti-Goodhart requires reconciling telemetry against provider data (SELF_IMPROVEMENT.md)",
+      "constraints": ["needs a scoped Analytics read token: governed secret decision (debt D5)", "read-only scope"],
+      "success": "Dashboard-measured neurons within 10% of seam estimates over a week, discrepancies explained",
+      "priority": "medium",
+      "status": "blocked-on-human",
+      "source": "agent",
+      "created": "2026-08-21"
+    },
+    {
+      "id": "OBJ-006",
+      "title": "Deploy-event detection in the activity feed",
+      "intent": "Heartbeat snapshots record the running commit; detecting commit changes between beats would surface deployments as first-class events",
+      "constraints": ["no new storage; derive from existing events"],
+      "success": "Console activity shows 'deployed <sha>' entries without manual recording",
+      "priority": "low",
+      "status": "proposed",
+      "source": "agent",
+      "created": "2026-08-21"
+    }
+  ]
+}

@@ -3,35 +3,118 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI·NT</title>
+  <title>AI·NT Console</title>
   <style>
-    :root { color-scheme: light dark; }
-    body {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      max-width: 40rem; margin: 4rem auto; padding: 0 1rem;
-    }
-    h1 { font-weight: 600; }
-    pre {
-      background: rgba(127, 127, 127, .12);
-      padding: 1rem; border-radius: .5rem; overflow-x: auto;
-    }
-    .err { color: #c00; }
+    :root { color-scheme: light dark; --ok: #2da44e; --bad: #cf222e; --dim: color-mix(in srgb, currentColor 55%, transparent); }
+    * { box-sizing: border-box; }
+    body { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; max-width: 60rem; margin: 2.5rem auto; padding: 0 1rem; line-height: 1.5; }
+    h1 { font-weight: 600; margin-bottom: 0; }
+    .sub { color: var(--dim); margin-top: .2rem; }
+    h2 { font-size: 1rem; margin: 1.8rem 0 .6rem; border-bottom: 1px solid var(--dim); padding-bottom: .3rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: .6rem; }
+    .card { background: rgba(127,127,127,.09); border-radius: .5rem; padding: .7rem .9rem; }
+    .k { color: var(--dim); font-size: .8rem; }
+    .v { font-size: 1.05rem; overflow-wrap: anywhere; }
+    .ok { color: var(--ok); } .bad { color: var(--bad); }
+    .bar { height: .4rem; background: rgba(127,127,127,.18); border-radius: .2rem; margin-top: .35rem; overflow: hidden; }
+    .bar > i { display: block; height: 100%; background: var(--ok); }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    td, th { text-align: left; padding: .25rem .5rem .25rem 0; vertical-align: top; }
+    th { color: var(--dim); font-weight: 500; }
+    .tag { font-size: .72rem; padding: .05rem .45rem; border: 1px solid var(--dim); border-radius: 1rem; white-space: nowrap; }
+    .detail { color: var(--dim); font-size: .8rem; overflow-wrap: anywhere; }
+    footer { margin-top: 2.5rem; color: var(--dim); font-size: .8rem; }
+    a { color: inherit; }
   </style>
 </head>
 <body>
   <h1>AI·NT</h1>
-  <p>AINT Is Not Transient.</p>
-  <h2>Health</h2>
-  <pre id="health">loading…</pre>
+  <p class="sub">AINT Is Not Transient — <span id="tagline">console</span></p>
+
+  <h2>Health <span id="health-badge"></span></h2>
+  <div class="grid" id="health"></div>
+
+  <h2>Resource envelope <span class="k">(UTC day, free tier)</span></h2>
+  <div class="grid" id="envelope"></div>
+
+  <h2>Objectives</h2>
+  <table id="objectives"><tbody></tbody></table>
+
+  <h2>Activity</h2>
+  <table id="activity"><tbody></tbody></table>
+
+  <footer>
+    <a href="https://github.com/gmale/aint">source</a> ·
+    <a href="/api/health">health</a> ·
+    <a href="/api/telemetry">telemetry</a> ·
+    <a href="/api/events">events</a> ·
+    refreshed <span id="refreshed">–</span> · auto-refreshes every 60s
+  </footer>
+
   <script>
-    fetch("/api/health")
-      .then(r => r.json())
-      .then(d => { document.getElementById("health").textContent = JSON.stringify(d, null, 2); })
-      .catch(e => {
-        const el = document.getElementById("health");
-        el.textContent = "unreachable: " + e;
-        el.className = "err";
-      });
+    const $ = (id) => document.getElementById(id);
+    const card = (k, v, cls = "") =>
+      `<div class="card"><div class="k">${k}</div><div class="v ${cls}">${v}</div></div>`;
+    const meter = (k, used, max, unit = "") => {
+      const pct = Math.min(100, (used / max) * 100);
+      return `<div class="card"><div class="k">${k}</div><div class="v">${used}${unit} <span class="k">/ ${max}${unit}</span></div><div class="bar"><i style="width:${pct.toFixed(1)}%"></i></div></div>`;
+    };
+    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const ago = (iso) => {
+      const s = Math.round((Date.now() - Date.parse(iso)) / 1000);
+      if (!Number.isFinite(s)) return "?";
+      if (s < 90) return s + "s ago";
+      if (s < 5400) return Math.round(s / 60) + "m ago";
+      if (s < 129600) return Math.round(s / 3600) + "h ago";
+      return Math.round(s / 86400) + "d ago";
+    };
+
+    async function refresh() {
+      const [health, telemetry, events, objectives] = await Promise.all([
+        fetch("/api/health").then((r) => r.json()).catch(() => null),
+        fetch("/api/telemetry").then((r) => r.json()).catch(() => null),
+        fetch("/api/events").then((r) => r.json()).catch(() => null),
+        fetch("/objectives.json").then((r) => r.json()).catch(() => null),
+      ]);
+
+      if (health) {
+        const okAll = health.status === "ok";
+        $("health-badge").innerHTML = `<span class="tag ${okAll ? "ok" : "bad"}">${esc(health.status.toUpperCase())}</span>`;
+        $("health").innerHTML =
+          card("build", `${esc(health.build.commit.slice(0, 7))} <span class="k">${esc(health.build.branch)} · ${esc(health.build.builder)}</span>`) +
+          card("deployed", `${ago(health.deployment.deployedAt)}`) +
+          card("policy", `v${esc(health.policy.version)} <span class="k">tier ${esc(health.policy.economicTier)}</span>`) +
+          health.dependencies.map((d) =>
+            card(esc(d.name), d.ok ? "ok" : `down <span class="k">${esc(d.detail ?? "")}</span>`, d.ok ? "ok" : "bad")).join("");
+      }
+
+      if (telemetry && health) {
+        const today = telemetry.counters[new Date().toISOString().slice(0, 10)] ?? {};
+        const neurons = Math.round((today.neurons_milli ?? 0) / 10) / 100;
+        $("envelope").innerHTML =
+          meter("requests", today.requests ?? 0, 100000) +
+          meter("model calls", today.model_calls ?? 0, health.policy.dailyInferenceBudget) +
+          meter("neurons (est.)", neurons, 10000) +
+          card("errors today", today.errors ?? 0, (today.errors ?? 0) > 0 ? "bad" : "ok");
+      }
+
+      if (objectives) {
+        $("objectives").querySelector("tbody").innerHTML = objectives.objectives
+          .map((o) => `<tr><td><span class="tag">${esc(o.status)}</span></td><td><b>${esc(o.id)}</b> ${esc(o.title)}<div class="detail">${esc(o.intent)}</div></td><td class="k">${esc(o.priority)} · ${esc(o.source)}</td></tr>`)
+          .join("");
+      }
+
+      if (events) {
+        $("activity").querySelector("tbody").innerHTML = events.events.length
+          ? events.events.slice(0, 25).map((e) =>
+              `<tr><td class="k" title="${esc(e.ts)}">${ago(e.ts)}</td><td><span class="tag">${esc(e.actor)}</span></td><td>${esc(e.kind)}<div class="detail">${esc(e.detail)}</div></td></tr>`).join("")
+          : `<tr><td class="k">no events yet — first heartbeat runs at minute 17</td></tr>`;
+      }
+
+      $("refreshed").textContent = new Date().toLocaleTimeString();
+    }
+    refresh();
+    setInterval(refresh, 60000);
   </script>
 </body>
 </html>

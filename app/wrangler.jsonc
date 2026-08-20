@@ -37,6 +37,9 @@
     "directory": "./public",
     "binding": "ASSETS"
   },
+  "triggers": {
+    "crons": ["17 * * * *", "43 6 * * *"]
+  },
   "observability": {
     "enabled": true
   }

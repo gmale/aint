@@ -14,6 +14,11 @@ import { counterStub, recordModelCall, recordRequest } from "./telemetry";
 export { TelemetryCounters } from "./telemetry";
 
 export default {
+  async scheduled(controller, env, ctx): Promise<void> {
+    const { runScheduled } = await import("./heartbeat");
+    await runScheduled(controller, env, ctx);
+  },
+
   async fetch(request, env, ctx): Promise<Response> {
     const url = new URL(request.url);
     const isApi = url.pathname.startsWith("/api/");
@@ -96,15 +101,26 @@ async function handleApi(
             result.usage.promptTokens !== null && result.usage.completionTokens !== null
               ? result.usage.promptTokens + result.usage.completionTokens
               : null,
+          neuronsEstimated: result.neuronsEstimated,
         });
         return Response.json({ ...result, policyVersion: decision.policyVersion });
       } catch (e) {
         // Free-tier quota exhaustion surfaces here as an error: report
         // it honestly and fail closed (experiments/000 §4, §14).
-        recordModelCall(env, ctx, { model: provider.model, ok: false, latencyMs: 0, totalTokens: null });
+        recordModelCall(env, ctx, {
+          model: provider.model,
+          ok: false,
+          latencyMs: 0,
+          totalTokens: null,
+          neuronsEstimated: null,
+        });
         console.error("model call failed", e);
         return Response.json({ error: "model call failed" }, { status: 502 });
       }
+    }
+    case "/api/events": {
+      const events = await counterStub(env).listEvents(50);
+      return Response.json({ events });
     }
     case "/api/telemetry": {
       const days = await counterStub(env).snapshot();

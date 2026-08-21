@@ -3,6 +3,10 @@
   "name": "aint",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-01",
+  "routes": [
+    { "pattern": "aintservice.com", "custom_domain": true },
+    { "pattern": "www.aintservice.com", "custom_domain": true }
+  ],
   "build": {
     "command": "node scripts/gen-build-info.mjs"
   },

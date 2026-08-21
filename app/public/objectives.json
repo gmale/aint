@@ -8,7 +8,11 @@
       "id": "OBJ-001",
       "title": "Console foundation (V1 M1)",
       "intent": "Make the live status surface the natural way to see health, resources, activity, and objectives",
-      "constraints": ["free tier only", "no build step", "reads existing APIs"],
+      "constraints": [
+        "free tier only",
+        "no build step",
+        "reads existing APIs"
+      ],
       "success": "A visitor can answer: is it healthy, what is it spending, what has it been doing, what is it working toward",
       "priority": "high",
       "status": "done",
@@ -19,7 +23,11 @@
       "id": "OBJ-002",
       "title": "Organizational memory (V1 M2)",
       "intent": "Durable discussions, objectives, and events with provenance, replacing this static file",
-      "constraints": ["schema evolves from real use", "provenance on every item", "poisoning rule: memory is evidence, never authority"],
+      "constraints": [
+        "schema evolves from real use",
+        "provenance on every item",
+        "poisoning rule: memory is evidence, never authority"
+      ],
       "success": "Discussion and objectives survive sessions and are queryable with provenance",
       "priority": "high",
       "status": "active",
@@ -30,10 +38,14 @@
       "id": "OBJ-007",
       "title": "Tool-use harness for open-weight models",
       "intent": "Decision 006: the harness is the product. Strict JSON tool protocol, bounded steps, deterministic validation with repair prompts — measure whether verified free models can complete multi-step tasks through it",
-      "constraints": ["open weights only", "inference budget", "tools deterministic and bounded"],
+      "constraints": [
+        "open weights only",
+        "inference budget",
+        "tools deterministic and bounded"
+      ],
       "success": "experiments/002 reports per-model task completion, step efficiency, and malformed-output rates through the harness",
       "priority": "high",
-      "status": "active",
+      "status": "done",
       "source": "agent",
       "created": "2026-08-21"
     },
@@ -41,7 +53,10 @@
       "id": "OBJ-008",
       "title": "Cloudflare Access in front of Console write surfaces",
       "intent": "Laptop independence requires authenticated human writes from any device; Access free tier (<=50 users) gates Console input without custom auth code",
-      "constraints": ["requires human dashboard setup", "free tier only"],
+      "constraints": [
+        "requires human dashboard setup",
+        "free tier only"
+      ],
       "success": "Console conversation requires your login; public read surfaces unchanged",
       "priority": "high",
       "status": "blocked-on-human",
@@ -52,7 +67,10 @@
       "id": "OBJ-009",
       "title": "GitHub write credential for cloud agents",
       "intent": "Agents need hands: API-created commits are auto-signed by GitHub and satisfy branch protection; requires a scoped credential lease as a Worker secret",
-      "constraints": ["human-granted lease with expiry", "PR path only — no direct main access"],
+      "constraints": [
+        "human-granted lease with expiry",
+        "PR path only — no direct main access"
+      ],
       "success": "An agent-authored PR created entirely from the Worker, passing signed-commit protection",
       "priority": "high",
       "status": "blocked-on-human",
@@ -63,7 +81,11 @@
       "id": "OBJ-003",
       "title": "Rerun model tournament with reps, cap variations, and tool use",
       "intent": "experiments/001 was 6 tasks x 1 rep with a 256-token cap that penalizes reasoning models; conclusions need error bars. Human hypothesis (2026-08-21): open-weight models will not handle multi-step tool use fluidly enough to run the organization's own workflows (gh/API-driving); the tournament must measure this before autonomy plans depend on it",
-      "constraints": ["stay within daily inference budget", "fixed benchmark version per run", "tool-use tasks scored on correct call sequences, not prose"],
+      "constraints": [
+        "stay within daily inference budget",
+        "fixed benchmark version per run",
+        "tool-use tasks scored on correct call sequences, not prose"
+      ],
       "success": "Ranking with >=3 reps per task, two output-cap settings, and a function-calling/tool-use task class, recorded in experiments/",
       "priority": "high",
       "status": "proposed",
@@ -74,7 +96,10 @@
       "id": "OBJ-004",
       "title": "Reduce debt D3: branch protection on main",
       "intent": "Push-equals-deploy is the largest open blast radius; PR-gated main is the first reduction step",
-      "constraints": ["requires human GitHub settings action", "must not block the autonomous loop entirely"],
+      "constraints": [
+        "requires human GitHub settings action",
+        "must not block the autonomous loop entirely"
+      ],
       "success": "Direct pushes to main rejected; PR path verified end to end",
       "priority": "high",
       "status": "blocked-on-human",
@@ -85,7 +110,10 @@
       "id": "OBJ-005",
       "title": "Reconcile self-reported neurons against platform truth",
       "intent": "Our neuron figures are seam estimates; anti-Goodhart requires reconciling telemetry against provider data (SELF_IMPROVEMENT.md)",
-      "constraints": ["needs a scoped Analytics read token: governed secret decision (debt D5)", "read-only scope"],
+      "constraints": [
+        "needs a scoped Analytics read token: governed secret decision (debt D5)",
+        "read-only scope"
+      ],
       "success": "Dashboard-measured neurons within 10% of seam estimates over a week, discrepancies explained",
       "priority": "medium",
       "status": "blocked-on-human",
@@ -96,7 +124,9 @@
       "id": "OBJ-006",
       "title": "Deploy-event detection in the activity feed",
       "intent": "Heartbeat snapshots record the running commit; detecting commit changes between beats would surface deployments as first-class events",
-      "constraints": ["no new storage; derive from existing events"],
+      "constraints": [
+        "no new storage; derive from existing events"
+      ],
       "success": "Console activity shows 'deployed <sha>' entries without manual recording",
       "priority": "low",
       "status": "proposed",

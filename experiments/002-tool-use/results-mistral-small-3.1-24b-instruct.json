@@ -1,0 +1,230 @@
+{
+  "summary": {
+    "model": "@cf/mistralai/mistral-small-3.1-24b-instruct",
+    "short": "mistral-small-3.1-24b-instruct",
+    "passes": "10/10",
+    "avgSteps": 2.2,
+    "totalRepairs": 0,
+    "totalNeurons": 182.29
+  },
+  "results": [
+    {
+      "task": "counter-read",
+      "rep": 0,
+      "pass": true,
+      "final": "1478",
+      "stepsUsed": 2,
+      "repairs": 0,
+      "neurons": 16.399,
+      "wallMs": 2471,
+      "error": null,
+      "trace": [
+        {
+          "tool": "get_counter",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "counter-read",
+      "rep": 1,
+      "pass": true,
+      "final": "1481",
+      "stepsUsed": 2,
+      "repairs": 0,
+      "neurons": 16.399,
+      "wallMs": 1161,
+      "error": null,
+      "trace": [
+        {
+          "tool": "get_counter",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "tool-arithmetic",
+      "rep": 0,
+      "pass": true,
+      "final": "42",
+      "stepsUsed": 2,
+      "repairs": 0,
+      "neurons": 16.234,
+      "wallMs": 1022,
+      "error": null,
+      "trace": [
+        {
+          "tool": "add",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "tool-arithmetic",
+      "rep": 1,
+      "pass": true,
+      "final": "42",
+      "stepsUsed": 2,
+      "repairs": 0,
+      "neurons": 16.234,
+      "wallMs": 1000,
+      "error": null,
+      "trace": [
+        {
+          "tool": "add",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "policy-read",
+      "rep": 0,
+      "pass": true,
+      "final": "0.4.0",
+      "stepsUsed": 2,
+      "repairs": 0,
+      "neurons": 16.59,
+      "wallMs": 1499,
+      "error": null,
+      "trace": [
+        {
+          "tool": "get_policy",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "policy-read",
+      "rep": 1,
+      "pass": true,
+      "final": "0.4.0",
+      "stepsUsed": 2,
+      "repairs": 0,
+      "neurons": 16.59,
+      "wallMs": 1428,
+      "error": null,
+      "trace": [
+        {
+          "tool": "get_policy",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "registry-count",
+      "rep": 0,
+      "pass": true,
+      "final": "9",
+      "stepsUsed": 2,
+      "repairs": 0,
+      "neurons": 15.419,
+      "wallMs": 832,
+      "error": null,
+      "trace": [
+        {
+          "tool": "count_objectives",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "registry-count",
+      "rep": 1,
+      "pass": true,
+      "final": "9",
+      "stepsUsed": 2,
+      "repairs": 0,
+      "neurons": 15.419,
+      "wallMs": 881,
+      "error": null,
+      "trace": [
+        {
+          "tool": "count_objectives",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "multi-hop",
+      "rep": 0,
+      "pass": true,
+      "final": "81",
+      "stepsUsed": 3,
+      "repairs": 0,
+      "neurons": 26.505,
+      "wallMs": 1598,
+      "error": null,
+      "trace": [
+        {
+          "tool": "get_counter",
+          "err": null
+        },
+        {
+          "tool": "record_note",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "multi-hop",
+      "rep": 1,
+      "pass": true,
+      "final": "84",
+      "stepsUsed": 3,
+      "repairs": 0,
+      "neurons": 26.505,
+      "wallMs": 2075,
+      "error": null,
+      "trace": [
+        {
+          "tool": "get_counter",
+          "err": null
+        },
+        {
+          "tool": "record_note",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    }
+  ]
+}

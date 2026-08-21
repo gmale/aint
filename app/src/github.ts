@@ -53,7 +53,16 @@ async function mainHeadOid(env: Env): Promise<string> {
  */
 export async function selfTest(env: Env): Promise<Record<string, unknown>> {
   if (!githubConfigured(env)) return { configured: false };
-  const out: Record<string, unknown> = { configured: true, tokenLength: env.GITHUB_TOKEN_AINT.trim().length };
+  const token = env.GITHUB_TOKEN_AINT.trim();
+  // Safe diagnostics: the prefix is shared by all fine-grained PATs;
+  // 8 hex chars of a SHA-256 identify the value without revealing it.
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+  const out: Record<string, unknown> = {
+    configured: true,
+    tokenLength: token.length,
+    tokenPrefix: token.slice(0, 11),
+    sha256_8: [...new Uint8Array(digest)].slice(0, 4).map((b) => b.toString(16).padStart(2, "0")).join(""),
+  };
   const who = await fetch(`${API}/user`, { headers: headers(env) });
   out.userEndpoint = `${who.status} ${who.ok ? ((await who.json()) as { login: string }).login : (await who.text()).slice(0, 80)}`;
   const ref = await fetch(`${API}/repos/${REPO}/git/ref/heads/main`, { headers: headers(env) });

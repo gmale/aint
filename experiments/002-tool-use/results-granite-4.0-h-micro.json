@@ -1,0 +1,218 @@
+{
+  "summary": {
+    "model": "@cf/ibm-granite/granite-4.0-h-micro",
+    "short": "granite-4.0-h-micro",
+    "passes": "5/10",
+    "avgSteps": 1.9,
+    "totalRepairs": 2,
+    "totalNeurons": 10.13
+  },
+  "results": [
+    {
+      "task": "counter-read",
+      "rep": 0,
+      "pass": true,
+      "final": "1306",
+      "stepsUsed": 2,
+      "repairs": 0,
+      "neurons": 1.039,
+      "wallMs": 2107,
+      "error": null,
+      "trace": [
+        {
+          "tool": "get_counter",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "counter-read",
+      "rep": 1,
+      "pass": true,
+      "final": "1309",
+      "stepsUsed": 2,
+      "repairs": 0,
+      "neurons": 1.039,
+      "wallMs": 1258,
+      "error": null,
+      "trace": [
+        {
+          "tool": "get_counter",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "tool-arithmetic",
+      "rep": 0,
+      "pass": true,
+      "final": "42",
+      "stepsUsed": 2,
+      "repairs": 0,
+      "neurons": 1.05,
+      "wallMs": 1341,
+      "error": null,
+      "trace": [
+        {
+          "tool": "add",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "tool-arithmetic",
+      "rep": 1,
+      "pass": true,
+      "final": "42",
+      "stepsUsed": 2,
+      "repairs": 0,
+      "neurons": 1.05,
+      "wallMs": 1489,
+      "error": null,
+      "trace": [
+        {
+          "tool": "add",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "policy-read",
+      "rep": 0,
+      "pass": false,
+      "final": "v2",
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0.445,
+      "wallMs": 559,
+      "error": null,
+      "trace": [
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "policy-read",
+      "rep": 1,
+      "pass": false,
+      "final": "1.2.3",
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0.475,
+      "wallMs": 645,
+      "error": null,
+      "trace": [
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "registry-count",
+      "rep": 0,
+      "pass": false,
+      "final": "0",
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0.433,
+      "wallMs": 454,
+      "error": null,
+      "trace": [
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "registry-count",
+      "rep": 1,
+      "pass": false,
+      "final": "3",
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0.433,
+      "wallMs": 446,
+      "error": null,
+      "trace": [
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "multi-hop",
+      "rep": 0,
+      "pass": true,
+      "final": "13",
+      "stepsUsed": 4,
+      "repairs": 1,
+      "neurons": 2.419,
+      "wallMs": 3315,
+      "error": null,
+      "trace": [
+        {
+          "tool": "MALFORMED",
+          "err": null
+        },
+        {
+          "tool": "get_counter",
+          "err": null
+        },
+        {
+          "tool": "record_note",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "multi-hop",
+      "rep": 1,
+      "pass": false,
+      "final": "18",
+      "stepsUsed": 3,
+      "repairs": 1,
+      "neurons": 1.751,
+      "wallMs": 2261,
+      "error": null,
+      "trace": [
+        {
+          "tool": "MALFORMED",
+          "err": null
+        },
+        {
+          "tool": "get_counter",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    }
+  ]
+}

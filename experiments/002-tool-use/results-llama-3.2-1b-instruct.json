@@ -1,0 +1,198 @@
+{
+  "summary": {
+    "model": "@cf/meta/llama-3.2-1b-instruct",
+    "short": "llama-3.2-1b-instruct",
+    "passes": "1/10",
+    "avgSteps": 1.4,
+    "totalRepairs": 1,
+    "totalNeurons": 10.78
+  },
+  "results": [
+    {
+      "task": "counter-read",
+      "rep": 0,
+      "pass": false,
+      "final": "12345",
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0.685,
+      "wallMs": 462,
+      "error": null,
+      "trace": [
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "counter-read",
+      "rep": 1,
+      "pass": false,
+      "final": "1",
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0.667,
+      "wallMs": 372,
+      "error": null,
+      "trace": [
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "tool-arithmetic",
+      "rep": 0,
+      "pass": false,
+      "final": "42",
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0.653,
+      "wallMs": 338,
+      "error": null,
+      "trace": [
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "tool-arithmetic",
+      "rep": 1,
+      "pass": false,
+      "final": "42",
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0.653,
+      "wallMs": 336,
+      "error": null,
+      "trace": [
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "policy-read",
+      "rep": 0,
+      "pass": false,
+      "final": "1.0.0",
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0.733,
+      "wallMs": 467,
+      "error": null,
+      "trace": [
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "policy-read",
+      "rep": 1,
+      "pass": false,
+      "final": "v1.12.3",
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0.751,
+      "wallMs": 468,
+      "error": null,
+      "trace": [
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "registry-count",
+      "rep": 0,
+      "pass": false,
+      "final": "14",
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0.657,
+      "wallMs": 417,
+      "error": null,
+      "trace": [
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "registry-count",
+      "rep": 1,
+      "pass": true,
+      "final": "9",
+      "stepsUsed": 5,
+      "repairs": 1,
+      "neurons": 4.618,
+      "wallMs": 2122,
+      "error": null,
+      "trace": [
+        {
+          "tool": "MALFORMED",
+          "err": null
+        },
+        {
+          "tool": "count_objectives",
+          "err": null
+        },
+        {
+          "tool": "count_objectives",
+          "err": null
+        },
+        {
+          "tool": "count_objectives",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "multi-hop",
+      "rep": 0,
+      "pass": false,
+      "final": "3",
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0.68,
+      "wallMs": 392,
+      "error": null,
+      "trace": [
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "multi-hop",
+      "rep": 1,
+      "pass": false,
+      "final": "0",
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0.68,
+      "wallMs": 375,
+      "error": null,
+      "trace": [
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    }
+  ]
+}

@@ -16,6 +16,8 @@ import { counterStub, recordModelCall } from "./telemetry";
 
 const MAX_STEPS = 6;
 const MAX_REPAIRS = 4;
+/** Tool-driving default: only 10/10 model in experiments/002. */
+export const TOOL_MODEL = "@cf/mistralai/mistral-small-3.1-24b-instruct";
 
 interface ToolSpec {
   description: string;
@@ -122,7 +124,7 @@ export async function runTask(
   const decision = checkAction({ class: "inference", paid: false, detail: "tool-loop" });
   if (!decision.allowed) return { error: decision.reason, status: 403 };
 
-  const provider = workersAiProvider(env, model);
+  const provider = workersAiProvider(env, model ?? TOOL_MODEL);
   const trace: StepTrace[] = [];
   let repairs = 0;
   let neurons = 0;
@@ -137,8 +139,20 @@ export async function runTask(
     try {
       result = await provider.generate({ prompt, maxTokens: 200 });
     } catch (e) {
-      trace.push({ raw: "", parsed: null, error: String(e).slice(0, 200) });
-      break;
+      // Backoff-and-retry once on gateway rate limiting — found the
+      // hard way in experiments/002 (an entire model's run zeroed).
+      if (/rate limit/i.test(String(e))) {
+        await new Promise((r) => setTimeout(r, 2500));
+        try {
+          result = await provider.generate({ prompt, maxTokens: 200 });
+        } catch (e2) {
+          trace.push({ raw: "", parsed: null, error: String(e2).slice(0, 200) });
+          break;
+        }
+      } else {
+        trace.push({ raw: "", parsed: null, error: String(e).slice(0, 200) });
+        break;
+      }
     }
     recordModelCall(env, ctx, {
       model: result.model,

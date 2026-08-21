@@ -1,0 +1,206 @@
+{
+  "summary": {
+    "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+    "short": "qwen3-30b-a3b-fp8",
+    "passes": "3/10",
+    "avgSteps": 1.6,
+    "totalRepairs": 3,
+    "totalNeurons": 63.44
+  },
+  "results": [
+    {
+      "task": "counter-read",
+      "rep": 0,
+      "pass": true,
+      "final": "1441",
+      "stepsUsed": 2,
+      "repairs": 0,
+      "neurons": 10.506,
+      "wallMs": 2926,
+      "error": null,
+      "trace": [
+        {
+          "tool": "get_counter",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "counter-read",
+      "rep": 1,
+      "pass": true,
+      "final": "1446",
+      "stepsUsed": 3,
+      "repairs": 1,
+      "neurons": 18.718,
+      "wallMs": 4447,
+      "error": null,
+      "trace": [
+        {
+          "tool": "MALFORMED",
+          "err": null
+        },
+        {
+          "tool": "get_counter",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "tool-arithmetic",
+      "rep": 0,
+      "pass": true,
+      "final": "42",
+      "stepsUsed": 4,
+      "repairs": 2,
+      "neurons": 27.032,
+      "wallMs": 6029,
+      "error": null,
+      "trace": [
+        {
+          "tool": "MALFORMED",
+          "err": null
+        },
+        {
+          "tool": "MALFORMED",
+          "err": null
+        },
+        {
+          "tool": "add",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "tool-arithmetic",
+      "rep": 1,
+      "pass": false,
+      "final": "42",
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 7.179,
+      "wallMs": 1679,
+      "error": null,
+      "trace": [
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "policy-read",
+      "rep": 0,
+      "pass": false,
+      "final": null,
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0,
+      "wallMs": 116,
+      "error": null,
+      "trace": [
+        {
+          "tool": "MALFORMED",
+          "err": "AiGatewayError: 2003: Rate limited"
+        }
+      ]
+    },
+    {
+      "task": "policy-read",
+      "rep": 1,
+      "pass": false,
+      "final": null,
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0,
+      "wallMs": 115,
+      "error": null,
+      "trace": [
+        {
+          "tool": "MALFORMED",
+          "err": "AiGatewayError: 2003: Rate limited"
+        }
+      ]
+    },
+    {
+      "task": "registry-count",
+      "rep": 0,
+      "pass": false,
+      "final": null,
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0,
+      "wallMs": 777,
+      "error": null,
+      "trace": [
+        {
+          "tool": "MALFORMED",
+          "err": "AiGatewayError: 2003: Rate limited"
+        }
+      ]
+    },
+    {
+      "task": "registry-count",
+      "rep": 1,
+      "pass": false,
+      "final": null,
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0,
+      "wallMs": 121,
+      "error": null,
+      "trace": [
+        {
+          "tool": "MALFORMED",
+          "err": "AiGatewayError: 2003: Rate limited"
+        }
+      ]
+    },
+    {
+      "task": "multi-hop",
+      "rep": 0,
+      "pass": false,
+      "final": null,
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0,
+      "wallMs": 126,
+      "error": null,
+      "trace": [
+        {
+          "tool": "MALFORMED",
+          "err": "AiGatewayError: 2003: Rate limited"
+        }
+      ]
+    },
+    {
+      "task": "multi-hop",
+      "rep": 1,
+      "pass": false,
+      "final": null,
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0,
+      "wallMs": 122,
+      "error": null,
+      "trace": [
+        {
+          "tool": "MALFORMED",
+          "err": "AiGatewayError: 2003: Rate limited"
+        }
+      ]
+    }
+  ]
+}

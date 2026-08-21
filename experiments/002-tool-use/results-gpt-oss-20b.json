@@ -1,0 +1,238 @@
+{
+  "summary": {
+    "model": "@cf/openai/gpt-oss-20b",
+    "short": "gpt-oss-20b",
+    "passes": "4/10",
+    "avgSteps": 2.4,
+    "totalRepairs": 12,
+    "totalNeurons": 195.21
+  },
+  "results": [
+    {
+      "task": "counter-read",
+      "rep": 0,
+      "pass": false,
+      "final": null,
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0,
+      "wallMs": 210,
+      "error": null,
+      "trace": [
+        {
+          "tool": "MALFORMED",
+          "err": "AiGatewayError: 2003: Rate limited"
+        }
+      ]
+    },
+    {
+      "task": "counter-read",
+      "rep": 1,
+      "pass": false,
+      "final": null,
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0,
+      "wallMs": 160,
+      "error": null,
+      "trace": [
+        {
+          "tool": "MALFORMED",
+          "err": "AiGatewayError: 2003: Rate limited"
+        }
+      ]
+    },
+    {
+      "task": "tool-arithmetic",
+      "rep": 0,
+      "pass": false,
+      "final": null,
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0,
+      "wallMs": 131,
+      "error": null,
+      "trace": [
+        {
+          "tool": "MALFORMED",
+          "err": "AiGatewayError: 2003: Rate limited"
+        }
+      ]
+    },
+    {
+      "task": "tool-arithmetic",
+      "rep": 1,
+      "pass": false,
+      "final": null,
+      "stepsUsed": 1,
+      "repairs": 0,
+      "neurons": 0,
+      "wallMs": 164,
+      "error": null,
+      "trace": [
+        {
+          "tool": "MALFORMED",
+          "err": "AiGatewayError: 2003: Rate limited"
+        }
+      ]
+    },
+    {
+      "task": "policy-read",
+      "rep": 0,
+      "pass": true,
+      "final": "0.4.0",
+      "stepsUsed": 4,
+      "repairs": 2,
+      "neurons": 30.772,
+      "wallMs": 3010,
+      "error": null,
+      "trace": [
+        {
+          "tool": "MALFORMED",
+          "err": null
+        },
+        {
+          "tool": "MALFORMED",
+          "err": null
+        },
+        {
+          "tool": "get_policy",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "policy-read",
+      "rep": 1,
+      "pass": true,
+      "final": "0.4.0",
+      "stepsUsed": 2,
+      "repairs": 0,
+      "neurons": 16.418,
+      "wallMs": 1820,
+      "error": null,
+      "trace": [
+        {
+          "tool": "get_policy",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "registry-count",
+      "rep": 0,
+      "pass": true,
+      "final": "9",
+      "stepsUsed": 2,
+      "repairs": 0,
+      "neurons": 15.882,
+      "wallMs": 2482,
+      "error": null,
+      "trace": [
+        {
+          "tool": "count_objectives",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "registry-count",
+      "rep": 1,
+      "pass": true,
+      "final": "9",
+      "stepsUsed": 2,
+      "repairs": 0,
+      "neurons": 15.555,
+      "wallMs": 1778,
+      "error": null,
+      "trace": [
+        {
+          "tool": "count_objectives",
+          "err": null
+        },
+        {
+          "tool": "FINAL",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "multi-hop",
+      "rep": 0,
+      "pass": false,
+      "final": null,
+      "stepsUsed": 5,
+      "repairs": 5,
+      "neurons": 58.291,
+      "wallMs": 7902,
+      "error": null,
+      "trace": [
+        {
+          "tool": "MALFORMED",
+          "err": null
+        },
+        {
+          "tool": "MALFORMED",
+          "err": null
+        },
+        {
+          "tool": "MALFORMED",
+          "err": null
+        },
+        {
+          "tool": "MALFORMED",
+          "err": null
+        },
+        {
+          "tool": "MALFORMED",
+          "err": null
+        }
+      ]
+    },
+    {
+      "task": "multi-hop",
+      "rep": 1,
+      "pass": false,
+      "final": null,
+      "stepsUsed": 5,
+      "repairs": 5,
+      "neurons": 58.291,
+      "wallMs": 7516,
+      "error": null,
+      "trace": [
+        {
+          "tool": "MALFORMED",
+          "err": null
+        },
+        {
+          "tool": "MALFORMED",
+          "err": null
+        },
+        {
+          "tool": "MALFORMED",
+          "err": null
+        },
+        {
+          "tool": "MALFORMED",
+          "err": null
+        },
+        {
+          "tool": "MALFORMED",
+          "err": null
+        }
+      ]
+    }
+  ]
+}

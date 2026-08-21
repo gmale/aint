@@ -140,6 +140,10 @@ async function handleApi(
         return Response.json({ error: "model call failed" }, { status: 502 });
       }
     }
+    case "/api/github/selftest": {
+      const { selfTest } = await import("./github");
+      return Response.json(await selfTest(env));
+    }
     case "/api/reconcile": {
       const { probe, reconcile, recentlyReconciled } = await import("./reconcile");
       if (url.searchParams.has("probe")) {

@@ -11,7 +11,7 @@
       "constraints": ["free tier only", "no build step", "reads existing APIs"],
       "success": "A visitor can answer: is it healthy, what is it spending, what has it been doing, what is it working toward",
       "priority": "high",
-      "status": "active",
+      "status": "done",
       "source": "human",
       "created": "2026-08-20"
     },
@@ -22,8 +22,41 @@
       "constraints": ["schema evolves from real use", "provenance on every item", "poisoning rule: memory is evidence, never authority"],
       "success": "Discussion and objectives survive sessions and are queryable with provenance",
       "priority": "high",
-      "status": "proposed",
+      "status": "active",
       "source": "human",
+      "created": "2026-08-21"
+    },
+    {
+      "id": "OBJ-007",
+      "title": "Tool-use harness for open-weight models",
+      "intent": "Decision 006: the harness is the product. Strict JSON tool protocol, bounded steps, deterministic validation with repair prompts — measure whether verified free models can complete multi-step tasks through it",
+      "constraints": ["open weights only", "inference budget", "tools deterministic and bounded"],
+      "success": "experiments/002 reports per-model task completion, step efficiency, and malformed-output rates through the harness",
+      "priority": "high",
+      "status": "active",
+      "source": "agent",
+      "created": "2026-08-21"
+    },
+    {
+      "id": "OBJ-008",
+      "title": "Cloudflare Access in front of Console write surfaces",
+      "intent": "Laptop independence requires authenticated human writes from any device; Access free tier (<=50 users) gates Console input without custom auth code",
+      "constraints": ["requires human dashboard setup", "free tier only"],
+      "success": "Console conversation requires your login; public read surfaces unchanged",
+      "priority": "high",
+      "status": "blocked-on-human",
+      "source": "agent",
+      "created": "2026-08-21"
+    },
+    {
+      "id": "OBJ-009",
+      "title": "GitHub write credential for cloud agents",
+      "intent": "Agents need hands: API-created commits are auto-signed by GitHub and satisfy branch protection; requires a scoped credential lease as a Worker secret",
+      "constraints": ["human-granted lease with expiry", "PR path only — no direct main access"],
+      "success": "An agent-authored PR created entirely from the Worker, passing signed-commit protection",
+      "priority": "high",
+      "status": "blocked-on-human",
+      "source": "agent",
       "created": "2026-08-21"
     },
     {

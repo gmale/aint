@@ -30,11 +30,10 @@ export interface PolicyDecision {
 }
 
 export const POLICY = {
-  // 0.3.0: added platform-read (decisions/005) — telemetry
-  // reconciliation against provider truth requires reading our own
-  // account's analytics API. Deliberately distinct from external-call,
-  // which remains forbidden.
-  version: "0.3.0",
+  // 0.3.0: added platform-read (decisions/005). 0.4.0: inference
+  // budget 500→1000 for open-weights harness experiments and new
+  // message budget for public Console conversation (decisions/006).
+  version: "0.4.0",
   economicTier: "free",
   paidActivationForbidden: true,
   allowedActionClasses: ["read", "inference", "storage-write", "platform-read"] satisfies ActionClass[],
@@ -45,8 +44,19 @@ export const POLICY = {
    * observed <1 neuron/call stays well under 10% of the 10k-neuron/day
    * free allocation. True signed capability leases are an M4 concern.
    */
-  dailyInferenceBudget: 500,
+  dailyInferenceBudget: 1000,
+  /** Public conversation writes per UTC day (lease-lite, like inference). */
+  dailyMessageBudget: 200,
 } as const;
+
+export function checkMessageBudget(usedToday: number): PolicyDecision {
+  if (usedToday >= POLICY.dailyMessageBudget) {
+    return deny(
+      `daily message budget exhausted (${usedToday}/${POLICY.dailyMessageBudget}); resets 00:00 UTC`,
+    );
+  }
+  return { allowed: true, reason: "within budget", policyVersion: POLICY.version };
+}
 
 export function checkInferenceBudget(usedToday: number): PolicyDecision {
   if (usedToday >= POLICY.dailyInferenceBudget) {

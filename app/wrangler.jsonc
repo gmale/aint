@@ -13,6 +13,14 @@
     "binding": "AI",
     "remote": true
   },
+  "d1_databases": [
+    {
+      "binding": "MEMORY_DB",
+      "database_name": "aint-memory",
+      "database_id": "832728b5-bc90-4ddf-af41-3981919c4ced",
+      "migrations_dir": "./migrations"
+    }
+  ],
   "analytics_engine_datasets": [
     {
       "binding": "TELEMETRY_EVENTS",

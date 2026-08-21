@@ -13,6 +13,7 @@ export type ActionClass =
   | "inference" // model call within verified free quota
   | "storage-write" // durable state mutation (DO/D1/KV/R2)
   | "platform-read" // read-only call to our own platform provider's API (api.cloudflare.com) with scoped credentials
+  | "github-write" // branch/commit/PR against our own repo via the broker; never merge (decisions/007)
   | "external-call" // outbound call to any other external service — still forbidden
   | "resource-provision"; // creating/altering platform resources
 
@@ -33,10 +34,12 @@ export const POLICY = {
   // 0.3.0: added platform-read (decisions/005). 0.4.0: inference
   // budget 500→1000 for open-weights harness experiments and new
   // message budget for public Console conversation (decisions/006).
-  version: "0.4.0",
+  // 0.5.0: github-write class + PR budget (decisions/007) — the
+  // system gains hands: branch/commit/PR through the broker, no merge.
+  version: "0.5.0",
   economicTier: "free",
   paidActivationForbidden: true,
-  allowedActionClasses: ["read", "inference", "storage-write", "platform-read"] satisfies ActionClass[],
+  allowedActionClasses: ["read", "inference", "storage-write", "platform-read", "github-write"] satisfies ActionClass[],
   /**
    * Lease-lite blast-radius bound for the public inference endpoint
    * (SECURITY.md §Capability model): at most this many model calls per
@@ -47,7 +50,16 @@ export const POLICY = {
   dailyInferenceBudget: 1000,
   /** Public conversation writes per UTC day (lease-lite, like inference). */
   dailyMessageBudget: 200,
+  /** Agent-authored pull requests per UTC day. */
+  dailyPrBudget: 5,
 } as const;
+
+export function checkPrBudget(usedToday: number): PolicyDecision {
+  if (usedToday >= POLICY.dailyPrBudget) {
+    return deny(`daily PR budget exhausted (${usedToday}/${POLICY.dailyPrBudget}); resets 00:00 UTC`);
+  }
+  return { allowed: true, reason: "within budget", policyVersion: POLICY.version };
+}
 
 export function checkMessageBudget(usedToday: number): PolicyDecision {
   if (usedToday >= POLICY.dailyMessageBudget) {

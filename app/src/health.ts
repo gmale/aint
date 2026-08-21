@@ -27,6 +27,7 @@ export async function healthReport(origin: string, env: Env) {
     checkAnalyticsEngine(env),
     checkWorkersAi(env),
     await checkMemoryDb(env),
+    checkGithubBroker(env),
   ];
   const ok = dependencies.every((d) => d.ok);
 
@@ -82,6 +83,16 @@ async function checkTelemetryCounters(env: Env): Promise<DependencyReport> {
   } catch (e) {
     return { name: "telemetry_counters", ok: false, latencyMs: Date.now() - start, detail: String(e) };
   }
+}
+
+function checkGithubBroker(env: Env): DependencyReport {
+  const configured = typeof env.GITHUB_TOKEN_AINT === "string" && env.GITHUB_TOKEN_AINT.length > 20;
+  return {
+    name: "github_broker",
+    ok: configured,
+    latencyMs: 0,
+    detail: configured ? "token configured; not probed" : "GITHUB_TOKEN_AINT missing",
+  };
 }
 
 async function checkMemoryDb(env: Env): Promise<DependencyReport> {

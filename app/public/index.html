@@ -34,6 +34,19 @@
   <h2>Health <span id="health-badge"></span></h2>
   <div class="grid" id="health"></div>
 
+  <h2>Converse</h2>
+  <div class="grid" style="grid-template-columns: 1fr 2fr; align-items: start;">
+    <div class="card" id="threads-list" style="max-height: 22rem; overflow-y: auto;">loading…</div>
+    <div class="card">
+      <div id="thread-view" style="max-height: 16rem; overflow-y: auto;" class="detail">select or start a thread</div>
+      <form id="composer" style="margin-top: .6rem; display: flex; gap: .5rem;">
+        <input id="msg" placeholder="say something to the organization…" maxlength="4000"
+          style="flex: 1; font: inherit; padding: .45rem; border: 1px solid var(--dim); border-radius: .35rem; background: transparent; color: inherit;">
+        <button style="font: inherit; padding: .45rem .9rem; border: 1px solid var(--dim); border-radius: .35rem; background: transparent; color: inherit; cursor: pointer;">send</button>
+      </form>
+    </div>
+  </div>
+
   <h2>Resource envelope <span class="k">(UTC day, free tier)</span></h2>
   <div class="grid" id="envelope"></div>
 
@@ -115,6 +128,38 @@
     }
     refresh();
     setInterval(refresh, 60000);
+
+    // --- Converse ---
+    let activeThread = null;
+    async function loadThreads() {
+      const data = await fetch("/api/threads").then((r) => r.json()).catch(() => null);
+      if (!data) return;
+      $("threads-list").innerHTML = data.threads.length
+        ? data.threads.map((t) =>
+            `<div style="cursor:pointer; padding:.25rem 0; ${t.id === activeThread ? "font-weight:600;" : ""}" onclick="openThread(${t.id})">${esc(t.title)} <span class="k">(${t.message_count})</span></div>`).join("")
+        : '<span class="k">no threads yet — start one →</span>';
+    }
+    async function openThread(id) {
+      activeThread = id;
+      const data = await fetch(`/api/threads/${id}`).then((r) => r.json()).catch(() => null);
+      if (!data) return;
+      $("thread-view").innerHTML = data.messages.map((m) =>
+        `<div style="margin-bottom:.5rem;"><span class="tag">${esc(m.author)}</span> ${esc(m.content)}</div>`).join("");
+      $("thread-view").scrollTop = $("thread-view").scrollHeight;
+      loadThreads();
+    }
+    window.openThread = openThread;
+    $("composer").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const content = $("msg").value.trim();
+      if (!content) return;
+      $("msg").value = "";
+      const url = activeThread ? `/api/threads/${activeThread}/messages` : "/api/threads";
+      const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ content }) }).then((r) => r.json()).catch(() => null);
+      if (res?.threadId) activeThread = res.threadId;
+      if (activeThread) { openThread(activeThread); setTimeout(() => openThread(activeThread), 3500); setTimeout(() => openThread(activeThread), 9000); }
+    });
+    loadThreads();
   </script>
 </body>
 </html>

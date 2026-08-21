@@ -8,7 +8,7 @@
  */
 import { healthReport } from "./health";
 import { MODELS, workersAiProvider } from "./model";
-import { checkAction, checkInferenceBudget, POLICY } from "./policy";
+import { checkAction, checkInferenceBudget, checkMessageBudget, POLICY } from "./policy";
 import { counterStub, recordModelCall, recordRequest } from "./telemetry";
 
 export { TelemetryCounters } from "./telemetry";
@@ -48,7 +48,29 @@ async function handleApi(
   env: Env,
   ctx: ExecutionContext,
 ): Promise<Response> {
+  if (url.pathname.startsWith("/api/threads")) {
+    return handleThreads(url, request, env, ctx);
+  }
   switch (url.pathname) {
+    case "/api/agent/task": {
+      if (request.method !== "POST") return Response.json({ error: "POST only" }, { status: 405 });
+      let body: { task?: unknown; model?: unknown };
+      try {
+        body = (await request.json()) as typeof body;
+      } catch {
+        return Response.json({ error: 'body must be JSON: {"task": "..."}' }, { status: 400 });
+      }
+      if (typeof body.task !== "string" || body.task.length === 0 || body.task.length > 1000) {
+        return Response.json({ error: "task must be a string of at most 1000 chars" }, { status: 400 });
+      }
+      if (body.model !== undefined && (typeof body.model !== "string" || !(body.model in MODELS))) {
+        return Response.json({ error: "model must be in the verified allowlist", allowed: Object.keys(MODELS) }, { status: 400 });
+      }
+      const { runTask } = await import("./toolloop");
+      const result = await runTask(env, ctx, body.task, body.model as string | undefined);
+      if ("error" in result) return Response.json(result, { status: result.status });
+      return Response.json(result);
+    }
     case "/api/health": {
       const report = await healthReport(url.origin, env);
       return Response.json(report, { status: report.status === "ok" ? 200 : 503 });
@@ -145,4 +167,58 @@ async function handleApi(
     default:
       return Response.json({ error: "not found" }, { status: 404 });
   }
+}
+
+async function handleThreads(
+  url: URL,
+  request: Request,
+  env: Env,
+  ctx: ExecutionContext,
+): Promise<Response> {
+  const { listThreads, getThread, createThread, addMessage, orgReply } = await import("./memory");
+  const parts = url.pathname.split("/").filter(Boolean); // ["api","threads",id?,"messages"?]
+
+  if (parts.length === 2 && request.method === "GET") {
+    return Response.json({ threads: await listThreads(env) });
+  }
+  if (parts.length === 3 && request.method === "GET") {
+    const id = Number(parts[2]);
+    if (!Number.isInteger(id)) return Response.json({ error: "bad thread id" }, { status: 400 });
+    return Response.json({ messages: await getThread(env, id) });
+  }
+  if (request.method !== "POST") return Response.json({ error: "not found" }, { status: 404 });
+
+  // Writes: policy class + daily message budget (lease-lite).
+  const decision = checkAction({ class: "storage-write", detail: "converse-message" });
+  if (!decision.allowed) return Response.json({ error: decision.reason }, { status: 403 });
+  const used = await counterStub(env).todayCount("messages");
+  const budget = checkMessageBudget(used);
+  if (!budget.allowed) return Response.json({ error: budget.reason }, { status: 429 });
+
+  let body: { title?: unknown; content?: unknown };
+  try {
+    body = (await request.json()) as typeof body;
+  } catch {
+    return Response.json({ error: "body must be JSON" }, { status: 400 });
+  }
+  const content = typeof body.content === "string" ? body.content.trim() : "";
+  if (!content || content.length > 4000) {
+    return Response.json({ error: "content must be 1-4000 chars" }, { status: 400 });
+  }
+
+  let threadId: number;
+  if (parts.length === 2) {
+    const title = typeof body.title === "string" && body.title.trim() ? body.title.trim() : content.slice(0, 60);
+    threadId = await createThread(env, title);
+  } else if (parts.length === 4 && parts[3] === "messages") {
+    threadId = Number(parts[2]);
+    if (!Number.isInteger(threadId)) return Response.json({ error: "bad thread id" }, { status: 400 });
+  } else {
+    return Response.json({ error: "not found" }, { status: 404 });
+  }
+
+  await addMessage(env, threadId, "web-visitor", "human-web", content);
+  ctx.waitUntil(counterStub(env).increment(["messages"]).catch(() => {}));
+  ctx.waitUntil(orgReply(env, ctx, threadId));
+  return Response.json({ threadId, note: "message stored; the organization replies asynchronously — refetch the thread" }, { status: 201 });
 }

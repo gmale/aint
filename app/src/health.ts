@@ -26,6 +26,7 @@ export async function healthReport(origin: string, env: Env) {
     await checkTelemetryCounters(env),
     checkAnalyticsEngine(env),
     checkWorkersAi(env),
+    await checkMemoryDb(env),
   ];
   const ok = dependencies.every((d) => d.ok);
 
@@ -80,6 +81,16 @@ async function checkTelemetryCounters(env: Env): Promise<DependencyReport> {
     return { name: "telemetry_counters", ok: pong === "ok", latencyMs: Date.now() - start };
   } catch (e) {
     return { name: "telemetry_counters", ok: false, latencyMs: Date.now() - start, detail: String(e) };
+  }
+}
+
+async function checkMemoryDb(env: Env): Promise<DependencyReport> {
+  const start = Date.now();
+  try {
+    await env.MEMORY_DB.prepare("SELECT 1").first();
+    return { name: "memory_db", ok: true, latencyMs: Date.now() - start };
+  } catch (e) {
+    return { name: "memory_db", ok: false, latencyMs: Date.now() - start, detail: String(e).slice(0, 120) };
   }
 }
 

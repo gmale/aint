@@ -19,8 +19,9 @@ const API = "https://api.github.com";
 const GQL = "https://api.github.com/graphql";
 
 function headers(env: Env): Record<string, string> {
+  // trim(): a trailing newline in a pasted secret produces 401s.
   return {
-    authorization: `Bearer ${env.GITHUB_TOKEN_AINT}`,
+    authorization: `Bearer ${env.GITHUB_TOKEN_AINT.trim()}`,
     accept: "application/vnd.github+json",
     "user-agent": "aint-agent",
     "content-type": "application/json",
@@ -40,9 +41,24 @@ export async function branchExists(env: Env, branch: string): Promise<boolean> {
 
 async function mainHeadOid(env: Env): Promise<string> {
   const res = await fetch(`${API}/repos/${REPO}/git/ref/heads/main`, { headers: headers(env) });
-  if (!res.ok) throw new Error(`get main head: ${res.status}`);
+  if (!res.ok) throw new Error(`get main head: ${res.status} ${(await res.text()).slice(0, 100)}`);
   const data = (await res.json()) as { object: { sha: string } };
   return data.object.sha;
+}
+
+/**
+ * Read-only diagnosis: token validity and repo visibility, never the
+ * token itself. Safe to expose (worst case a stranger learns whether
+ * our token works).
+ */
+export async function selfTest(env: Env): Promise<Record<string, unknown>> {
+  if (!githubConfigured(env)) return { configured: false };
+  const out: Record<string, unknown> = { configured: true, tokenLength: env.GITHUB_TOKEN_AINT.trim().length };
+  const who = await fetch(`${API}/user`, { headers: headers(env) });
+  out.userEndpoint = `${who.status} ${who.ok ? ((await who.json()) as { login: string }).login : (await who.text()).slice(0, 80)}`;
+  const ref = await fetch(`${API}/repos/${REPO}/git/ref/heads/main`, { headers: headers(env) });
+  out.refEndpoint = `${ref.status}${ref.ok ? "" : " " + (await ref.text()).slice(0, 80)}`;
+  return out;
 }
 
 export interface PrRequest {

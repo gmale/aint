@@ -83,9 +83,9 @@
     };
 
     async function refresh() {
-      const [health, telemetry, events, objectives] = await Promise.all([
+      const [health, envelope, events, objectives] = await Promise.all([
         fetch("/api/health").then((r) => r.json()).catch(() => null),
-        fetch("/api/telemetry").then((r) => r.json()).catch(() => null),
+        fetch("/api/envelope").then((r) => r.json()).catch(() => null),
         fetch("/api/events").then((r) => r.json()).catch(() => null),
         fetch("/objectives.json").then((r) => r.json()).catch(() => null),
       ]);
@@ -101,14 +101,10 @@
             card(esc(d.name), d.ok ? "ok" : `down <span class="k">${esc(d.detail ?? "")}</span>`, d.ok ? "ok" : "bad")).join("");
       }
 
-      if (telemetry && health) {
-        const today = telemetry.counters[new Date().toISOString().slice(0, 10)] ?? {};
-        const neurons = Math.round((today.neurons_milli ?? 0) / 10) / 100;
+      if (envelope) {
         $("envelope").innerHTML =
-          meter("requests", today.requests ?? 0, 100000) +
-          meter("model calls", today.model_calls ?? 0, health.policy.dailyInferenceBudget) +
-          meter("neurons (est.)", neurons, 10000) +
-          card("errors today", today.errors ?? 0, (today.errors ?? 0) > 0 ? "bad" : "ok");
+          envelope.lines.map((l) => meter(l.resource.replace(/_/g, " "), l.used, l.limit)).join("") +
+          card("binds first", esc(envelope.bindsFirst.replace(/_/g, " ")), "");
       }
 
       if (objectives) {

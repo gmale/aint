@@ -154,6 +154,10 @@ async function handleApi(
       }
       return Response.json(await reconcile(env));
     }
+    case "/api/envelope": {
+      const { envelopeReport } = await import("./envelope");
+      return Response.json(await envelopeReport(env));
+    }
     case "/api/events": {
       const events = await counterStub(env).listEvents(50);
       return Response.json({ events });
@@ -221,7 +225,16 @@ async function handleThreads(
     return Response.json({ error: "not found" }, { status: 404 });
   }
 
-  await addMessage(env, threadId, "web-visitor", "human-web", content);
+  // Access identity when present (ctx.access is populated once the
+  // Zero Trust app protects this path); provenance over anonymity.
+  const identity = await (
+    ctx as unknown as { access?: { getIdentity(): Promise<{ email?: string } | undefined> } }
+  ).access
+    ?.getIdentity?.()
+    .catch(() => undefined);
+  const author = identity?.email ?? "web-visitor";
+  const authorType = identity?.email ? "human-verified" : "human-web";
+  await addMessage(env, threadId, author, authorType, content);
   ctx.waitUntil(counterStub(env).increment(["messages"]).catch(() => {}));
   ctx.waitUntil(orgReply(env, ctx, threadId));
   return Response.json({ threadId, note: "message stored; the organization replies asynchronously — refetch the thread" }, { status: 201 });

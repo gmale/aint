@@ -1,0 +1,81 @@
+# Actions-hosted coding peripheral (decision 009, pilot: mini-swe-agent).
+# Trigger: label an issue `agent-task` (task spec = issue body), or manual
+# dispatch. The agent thinks with OUR models via the AI Gateway
+# OpenAI-compat endpoint — no frontier calls, logging stays in-account.
+#
+# ACTIVATION (human, once): see automation/ACTIVATION.md — requires the
+# CF_AI_TOKEN repo secret; until it exists this workflow fails closed
+# at the guard step.
+#
+# Note on signed commits: the branch this pushes carries unsigned
+# Actions-bot commits; merging MUST be squash (the squash commit is
+# GitHub-signed, satisfying main's protection).
+name: agent-task
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "Task specification"
+        required: true
+        type: string
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: agent-task
+  cancel-in-progress: false
+
+jobs:
+  run:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'agent-task'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Guard — secret present
+        run: |
+          if [ -z "${{ secrets.CF_AI_TOKEN }}" ]; then
+            echo "CF_AI_TOKEN secret missing — activation incomplete (automation/ACTIVATION.md)"; exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pilot agent
+        run: pip install mini-swe-agent
+      - name: Resolve task
+        id: task
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "${{ inputs.task }}" > /tmp/task.txt
+          else
+            echo "${{ github.event.issue.body }}" > /tmp/task.txt
+          fi
+          echo "branch=agent-task/${{ github.run_id }}" >> "$GITHUB_OUTPUT"
+      - name: Run agent against Workers AI (compat endpoint)
+        env:
+          # litellm-style OpenAI-compatible routing through AI Gateway
+          # (keeps prompt/response logging in-account, decision 003).
+          OPENAI_API_KEY: ${{ secrets.CF_AI_TOKEN }}
+          OPENAI_BASE_URL: https://gateway.ai.cloudflare.com/v1/237ac99e90351553143c5a40f9019b0d/aint/compat
+          MSWEA_MODEL_NAME: openai/workers-ai/@cf/mistralai/mistral-small-3.1-24b-instruct
+        run: |
+          set -o pipefail
+          mini --yolo --task "$(cat /tmp/task.txt)" 2>&1 | tail -100
+      - name: Publish branch + PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet; then echo "no changes produced"; exit 0; fi
+          git config user.name "aint-actions-agent"
+          git config user.email "agent@aintservice.com"
+          git checkout -b "${{ steps.task.outputs.branch }}"
+          git add -A && git commit -m "agent-task: $(head -c 60 /tmp/task.txt)"
+          git push -u origin "${{ steps.task.outputs.branch }}"
+          gh pr create --title "agent-task: $(head -c 60 /tmp/task.txt)" \
+            --body "Authored by the Actions-hosted coding peripheral (decision 009). Task source: ${{ github.event_name }}. MERGE VIA SQUASH ONLY (branch commits are unsigned)." \
+            --base main

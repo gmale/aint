@@ -40,8 +40,8 @@ export async function runScheduled(
     }),
   );
   await policySelfTest(stub);
-  const { maybeAuthorFirstPr } = await import("./github");
-  await maybeAuthorFirstPr(env).catch(() => {});
+  const { runCurator } = await import("./curator");
+  await runCurator(env).catch(() => {});
 }
 
 /** Forbidden actions must be denied; record the outcome either way. */

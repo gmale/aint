@@ -1,7 +1,7 @@
 {
   "_meta": {
-    "description": "AINT objectives registry (M1 seed). Git-versioned: changes arrive via reviewed commits from humans or agents through the same path. ORGANIZATION.md is the schema's source of intent; M2 will move live state into organizational memory with this file as the auditable seed.",
-    "updated": "2026-08-21"
+    "description": "AINT objectives registry (M1 seed). Git-versioned: changes arrive via reviewed commits from humans or agents through the same path. ORGANIZATION.md is the schema's source of intent; M2 will move live state into organizational memory with this file as the auditable seed. done_when = deterministic probe (url + optional dot-path + expected value/status) evaluated hourly by the curator, which reconciles drift via PR.",
+    "updated": "2026-08-22"
   },
   "objectives": [
     {
@@ -17,7 +17,12 @@
       "priority": "high",
       "status": "done",
       "source": "human",
-      "created": "2026-08-20"
+      "created": "2026-08-20",
+      "done_when": {
+        "url": "https://aintservice.com/api/health",
+        "path": "status",
+        "expect": "ok"
+      }
     },
     {
       "id": "OBJ-002",
@@ -61,7 +66,11 @@
       "priority": "high",
       "status": "blocked-on-human",
       "source": "agent",
-      "created": "2026-08-21"
+      "created": "2026-08-21",
+      "done_when": {
+        "url": "https://aintservice.com/api/threads",
+        "expect": 302
+      }
     },
     {
       "id": "OBJ-009",
@@ -75,7 +84,12 @@
       "priority": "high",
       "status": "blocked-on-human",
       "source": "agent",
-      "created": "2026-08-21"
+      "created": "2026-08-21",
+      "done_when": {
+        "url": "https://api.github.com/repos/gmale/aint/pulls/25",
+        "path": "merged",
+        "expect": "true"
+      }
     },
     {
       "id": "OBJ-003",
@@ -104,7 +118,12 @@
       "priority": "high",
       "status": "blocked-on-human",
       "source": "agent",
-      "created": "2026-08-21"
+      "created": "2026-08-21",
+      "done_when": {
+        "url": "https://api.github.com/repos/gmale/aint/branches/main",
+        "path": "protected",
+        "expect": "true"
+      }
     },
     {
       "id": "OBJ-005",
@@ -116,7 +135,7 @@
       ],
       "success": "Dashboard-measured neurons within 10% of seam estimates over a week, discrepancies explained",
       "priority": "medium",
-      "status": "blocked-on-human",
+      "status": "done",
       "source": "agent",
       "created": "2026-08-21"
     },

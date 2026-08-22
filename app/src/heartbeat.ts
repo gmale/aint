@@ -10,9 +10,8 @@
  * Uses 2 of the account's 5 free Cron Triggers (experiments/000 §10).
  */
 import { healthReport } from "./health";
-import { workersAiProvider } from "./model";
 import { checkAction, checkInferenceBudget } from "./policy";
-import { counterStub, recordModelCall } from "./telemetry";
+import { counterStub } from "./telemetry";
 
 export const HOURLY_CRON = "17 * * * *";
 export const DAILY_CRON = "43 6 * * *";
@@ -65,45 +64,18 @@ async function policySelfTest(stub: ReturnType<typeof counterStub>): Promise<voi
   }
 }
 
-async function dailyReport(env: Env, ctx: ExecutionContext): Promise<void> {
+async function dailyReport(env: Env, _ctx: ExecutionContext): Promise<void> {
+  // Deterministic envelope, no model prose (the model-written report
+  // produced confident nonsense; arithmetic doesn't).
   const stub = counterStub(env);
-  const decision = checkAction({ class: "inference", paid: false, detail: "daily-report" });
-  const used = await stub.todayCount("model_calls");
-  const budget = checkInferenceBudget(used);
-  if (!decision.allowed || !budget.allowed) {
-    await stub.recordEvent(
-      "daily-report",
-      "skipped",
-      `policy denied: ${decision.allowed ? budget.reason : decision.reason}`,
-    );
-    return;
-  }
-  const days = await stub.snapshot(2);
-  const provider = workersAiProvider(env);
-  try {
-    const result = await provider.generate({
-      prompt: `You are AINT's daily status reporter. Given these daily counters (requests, api_requests, model_calls, errors, neurons_milli = neurons x1000), write a 2-3 sentence factual status report. No speculation, no advice. Data: ${JSON.stringify(days)}`,
-      maxTokens: 150,
-    });
-    recordModelCall(env, ctx, {
-      model: result.model,
-      ok: true,
-      latencyMs: result.latencyMs,
-      totalTokens:
-        result.usage.promptTokens !== null && result.usage.completionTokens !== null
-          ? result.usage.promptTokens + result.usage.completionTokens
-          : null,
-      neuronsEstimated: result.neuronsEstimated,
-    });
-    await stub.recordEvent("daily-report", "generated", result.text.slice(0, 800));
-  } catch (e) {
-    recordModelCall(env, ctx, {
-      model: provider.model,
-      ok: false,
-      latencyMs: 0,
-      totalTokens: null,
-      neuronsEstimated: null,
-    });
-    await stub.recordEvent("daily-report", "failed", String(e).slice(0, 300));
-  }
+  const { envelopeReport } = await import("./envelope");
+  const report = await envelopeReport(env);
+  await stub.recordEvent(
+    "daily-report",
+    "envelope",
+    JSON.stringify({
+      bindsFirst: report.bindsFirst,
+      top: report.lines.slice(0, 3).map((l) => `${l.resource} ${l.pct}%`),
+    }),
+  );
 }

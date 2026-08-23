@@ -85,6 +85,11 @@ async function handleApi(
     if (url.pathname.startsWith("/api/g/threads")) {
       return handleThreads(url, request, env, ctx, identity.email);
     }
+    if (url.pathname === "/api/g/signin") {
+      // Reaching here means Access just authenticated the navigation;
+      // bounce back to the Console with a fresh session cookie.
+      return Response.redirect("https://aintservice.com/", 302);
+    }
     if (url.pathname === "/api/g/events") {
       const events = await counterStub(env).listEvents(50);
       return Response.json({ events });

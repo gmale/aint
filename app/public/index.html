@@ -114,7 +114,7 @@
       }
 
       if (!events || !events.events) {
-        $("activity").querySelector("tbody").innerHTML = '<tr><td class="k">activity is owner-only — <a href="/api/g/events">sign in</a></td></tr>';
+        $("activity").querySelector("tbody").innerHTML = '<tr><td class="k">activity is owner-only — <a href="/api/g/signin">sign in</a></td></tr>';
       } else if (events) {
         $("activity").querySelector("tbody").innerHTML = events.events.length
           ? events.events.slice(0, 25).map((e) =>
@@ -131,7 +131,7 @@
     let activeThread = null;
     async function loadThreads() {
       const data = await fetch("/api/g/threads").then((r) => r.json()).catch(() => null);
-      if (!data || !data.threads) { $("threads-list").innerHTML = '<span class="k"><a href="/api/g/threads">sign in</a> to converse (owner only)</span>'; return; }
+      if (!data || !data.threads) { $("threads-list").innerHTML = '<span class="k"><a href="/api/g/signin">sign in</a> to converse (owner only)</span>'; return; }
       $("threads-list").innerHTML = data.threads.length
         ? data.threads.map((t) =>
             `<div style="cursor:pointer; padding:.25rem 0; ${t.id === activeThread ? "font-weight:600;" : ""}" onclick="openThread(${t.id})">${esc(t.title)} <span class="k">(${t.message_count})</span></div>`).join("")

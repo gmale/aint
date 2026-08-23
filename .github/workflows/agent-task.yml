@@ -59,7 +59,7 @@ jobs:
       - name: Configure agent (non-interactive)
         run: |
           mkdir -p ~/.config/mini-swe-agent
-          printf 'MSWEA_MODEL_NAME="openai/@cf/mistralai/mistral-small-3.1-24b-instruct"\nMSWEA_CONFIGURED="true"\n' > ~/.config/mini-swe-agent/.env
+          printf 'MSWEA_MODEL_NAME="openai/@cf/mistralai/mistral-small-3.1-24b-instruct"\nMSWEA_CONFIGURED="true"\nMSWEA_COST_TRACKING="ignore_errors"\n' > ~/.config/mini-swe-agent/.env
       - name: Run agent against Workers AI (compat endpoint)
         env:
           # litellm-style OpenAI-compatible routing through AI Gateway

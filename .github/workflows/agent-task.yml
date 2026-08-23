@@ -60,6 +60,22 @@ jobs:
         run: |
           mkdir -p ~/.config/mini-swe-agent
           printf 'MSWEA_MODEL_NAME="openai/@cf/mistralai/mistral-small-3.1-24b-instruct"\nMSWEA_CONFIGURED="true"\nMSWEA_COST_TRACKING="ignore_errors"\n' > ~/.config/mini-swe-agent/.env
+          # Force tool calls every turn (mistral prose-lapse cure, pilot iter 4):
+          # clone the default config and inject model_kwargs via litellm.
+          python3 - <<'EOF'
+          import minisweagent, pathlib, yaml
+          base = pathlib.Path(minisweagent.__file__).parent
+          cands = sorted(base.rglob("*.yaml"))
+          print("yaml candidates:", [str(c) for c in cands])
+          src = [c for c in cands if "mini" in c.name.lower()] or cands
+          cfg = yaml.safe_load(src[0].read_text())
+          cfg.setdefault("model", {}).setdefault("model_kwargs", {}).update(
+              {"tool_choice": "required", "max_tokens": 1500, "temperature": 0}
+          )
+          pathlib.Path("/tmp/mini-cfg.yaml").write_text(yaml.safe_dump(cfg))
+          print("wrote /tmp/mini-cfg.yaml from", src[0])
+          EOF
+          echo 'MSWEA_MINI_CONFIG_PATH="/tmp/mini-cfg.yaml"' >> ~/.config/mini-swe-agent/.env
       - name: Run agent against Workers AI (compat endpoint)
         env:
           # litellm-style OpenAI-compatible routing through AI Gateway

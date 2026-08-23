@@ -40,6 +40,13 @@ why it was needed, its scope, and how V1+ should reduce it. Last updated: 2026-0
 - **Risk:** read-only observability exposure on compromise, bounded by expiry.
 - **Renewal watch:** reconciliation will start failing with auth errors near expiry — the `query-error` events are the tripwire. Decide renewal (or retire the capability) before 2026-12-19.
 
+## D7 — Workers AI token in GitHub Actions (added 2026-08-23)
+
+- **Authority:** `CF_AI_TOKEN` repo Actions secret — Workers AI inference on the account, human-minted with expiry per the lease pattern.
+- **Why:** powers the Actions-hosted coding peripheral (decision 009); the runner holds the key in Actions secrets, models see only outputs — broker invariant preserved.
+- **Risk:** exposure = free-tier inference drain (fail-closed at 10k neurons/day) until revocation; no write authority to anything.
+- **Reduction:** revoke in dashboard + delete secret; expiry forces re-decision.
+
 ## D6 — Single production environment
 
 - **Authority/gap:** no staging environment; every deploy is production.

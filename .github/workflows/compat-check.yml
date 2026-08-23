@@ -1,0 +1,31 @@
+# One-shot diagnostics for the Workers AI OpenAI-compat endpoints
+# (experiments/003 open question: does the `tools` array pass through?).
+# Prints statuses and response shapes only — never the token.
+name: compat-check
+on: workflow_dispatch
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Gateway compat — plain completion
+        run: |
+          CODE=$(curl -s -o /tmp/r.json -w "%{http_code}" \
+            "https://gateway.ai.cloudflare.com/v1/237ac99e90351553143c5a40f9019b0d/aint/compat/chat/completions" \
+            -H "Authorization: Bearer ${{ secrets.CF_AI_TOKEN }}" -H "Content-Type: application/json" \
+            -d '{"model":"workers-ai/@cf/ibm-granite/granite-4.0-h-micro","messages":[{"role":"user","content":"Reply with exactly: ok"}],"max_tokens":10}')
+          echo "gateway_compat_status=$CODE"; head -c 400 /tmp/r.json; echo
+      - name: Direct compat — plain completion
+        run: |
+          CODE=$(curl -s -o /tmp/r.json -w "%{http_code}" \
+            "https://api.cloudflare.com/client/v4/accounts/237ac99e90351553143c5a40f9019b0d/ai/v1/chat/completions" \
+            -H "Authorization: Bearer ${{ secrets.CF_AI_TOKEN }}" -H "Content-Type: application/json" \
+            -d '{"model":"@cf/ibm-granite/granite-4.0-h-micro","messages":[{"role":"user","content":"Reply with exactly: ok"}],"max_tokens":10}')
+          echo "direct_compat_status=$CODE"; head -c 400 /tmp/r.json; echo
+      - name: Direct compat — tools pass-through (mistral)
+        run: |
+          CODE=$(curl -s -o /tmp/r.json -w "%{http_code}" \
+            "https://api.cloudflare.com/client/v4/accounts/237ac99e90351553143c5a40f9019b0d/ai/v1/chat/completions" \
+            -H "Authorization: Bearer ${{ secrets.CF_AI_TOKEN }}" -H "Content-Type: application/json" \
+            -d '{"model":"@cf/mistralai/mistral-small-3.1-24b-instruct","messages":[{"role":"user","content":"What is 17 plus 25? Use the add tool."}],"tools":[{"type":"function","function":{"name":"add","description":"add two numbers","parameters":{"type":"object","properties":{"a":{"type":"number"},"b":{"type":"number"}},"required":["a","b"]}}}],"max_tokens":150}')
+          echo "tools_status=$CODE"; head -c 600 /tmp/r.json; echo

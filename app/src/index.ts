@@ -21,6 +21,11 @@ export default {
 
   async fetch(request, env, ctx): Promise<Response> {
     const url = new URL(request.url);
+    // One canonical hostname: Access rules cover apex only, by design.
+    if (url.hostname === "www.aintservice.com") {
+      url.hostname = "aintservice.com";
+      return Response.redirect(url.toString(), 301);
+    }
     const isApi = url.pathname.startsWith("/api/");
     const start = Date.now();
     let response: Response;
@@ -52,14 +57,31 @@ async function handleApi(
   // Access identity (second lock behind the edge rule; also covers any
   // hostname that bypasses the zone, e.g. workers.dev).
   if (url.pathname.startsWith("/api/g/")) {
-    const identity = await (
-      ctx as unknown as { access?: { getIdentity(): Promise<{ email?: string } | undefined> } }
-    ).access
-      ?.getIdentity?.()
-      .catch(() => undefined);
-    if (!identity?.email) {
+    let email = (
+      await (
+        ctx as unknown as { access?: { getIdentity(): Promise<{ email?: string } | undefined> } }
+      ).access
+        ?.getIdentity?.()
+        .catch(() => undefined)
+    )?.email;
+    if (!email) {
+      // Zone-based Access apps deliver identity via JWT header. Payload
+      // decode only — the edge rule is the enforcing lock on this
+      // hostname; full JWKS signature verification is tracked work.
+      const jwt = request.headers.get("Cf-Access-Jwt-Assertion");
+      if (jwt) {
+        try {
+          const payload = JSON.parse(atob(jwt.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+          if (typeof payload.email === "string") email = payload.email;
+        } catch {
+          // fall through to 403
+        }
+      }
+    }
+    if (!email) {
       return Response.json({ error: "authentication required (Cloudflare Access)" }, { status: 403 });
     }
+    const identity = { email };
     if (url.pathname.startsWith("/api/g/threads")) {
       return handleThreads(url, request, env, ctx, identity.email);
     }

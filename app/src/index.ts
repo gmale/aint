@@ -48,11 +48,34 @@ async function handleApi(
   env: Env,
   ctx: ExecutionContext,
 ): Promise<Response> {
-  if (url.pathname.startsWith("/api/threads")) {
-    return handleThreads(url, request, env, ctx);
+  // Gated-by-convention: everything under /api/g/ requires a verified
+  // Access identity (second lock behind the edge rule; also covers any
+  // hostname that bypasses the zone, e.g. workers.dev).
+  if (url.pathname.startsWith("/api/g/")) {
+    const identity = await (
+      ctx as unknown as { access?: { getIdentity(): Promise<{ email?: string } | undefined> } }
+    ).access
+      ?.getIdentity?.()
+      .catch(() => undefined);
+    if (!identity?.email) {
+      return Response.json({ error: "authentication required (Cloudflare Access)" }, { status: 403 });
+    }
+    if (url.pathname.startsWith("/api/g/threads")) {
+      return handleThreads(url, request, env, ctx, identity.email);
+    }
+    if (url.pathname === "/api/g/events") {
+      const events = await counterStub(env).listEvents(50);
+      return Response.json({ events });
+    }
+    if (url.pathname !== "/api/g/agent/task") {
+      return Response.json({ error: "not found" }, { status: 404 });
+    }
+    // falls through to the agent task handler below
+  } else if (["/api/threads", "/api/agent/task", "/api/events"].some((m) => url.pathname.startsWith(m))) {
+    return Response.json({ error: "moved under /api/g/ (authenticated)" }, { status: 410 });
   }
   switch (url.pathname) {
-    case "/api/agent/task": {
+    case "/api/g/agent/task": {
       if (request.method !== "POST") return Response.json({ error: "POST only" }, { status: 405 });
       let body: { task?: unknown; model?: unknown };
       try {
@@ -158,10 +181,6 @@ async function handleApi(
       const { envelopeReport } = await import("./envelope");
       return Response.json(await envelopeReport(env));
     }
-    case "/api/events": {
-      const events = await counterStub(env).listEvents(50);
-      return Response.json({ events });
-    }
     case "/api/telemetry": {
       const days = await counterStub(env).snapshot();
       return Response.json({
@@ -182,9 +201,10 @@ async function handleThreads(
   request: Request,
   env: Env,
   ctx: ExecutionContext,
+  authorEmail: string,
 ): Promise<Response> {
   const { listThreads, getThread, createThread, addMessage, orgReply } = await import("./memory");
-  const parts = url.pathname.split("/").filter(Boolean); // ["api","threads",id?,"messages"?]
+  const parts = url.pathname.split("/").filter(Boolean).slice(1); // ["g","threads",id?,"messages"?]
 
   if (parts.length === 2 && request.method === "GET") {
     return Response.json({ threads: await listThreads(env) });
@@ -225,16 +245,7 @@ async function handleThreads(
     return Response.json({ error: "not found" }, { status: 404 });
   }
 
-  // Access identity when present (ctx.access is populated once the
-  // Zero Trust app protects this path); provenance over anonymity.
-  const identity = await (
-    ctx as unknown as { access?: { getIdentity(): Promise<{ email?: string } | undefined> } }
-  ).access
-    ?.getIdentity?.()
-    .catch(() => undefined);
-  const author = identity?.email ?? "web-visitor";
-  const authorType = identity?.email ? "human-verified" : "human-web";
-  await addMessage(env, threadId, author, authorType, content);
+  await addMessage(env, threadId, authorEmail, "human-verified", content);
   ctx.waitUntil(counterStub(env).increment(["messages"]).catch(() => {}));
   ctx.waitUntil(orgReply(env, ctx, threadId));
   return Response.json({ threadId, note: "message stored; the organization replies asynchronously — refetch the thread" }, { status: 201 });

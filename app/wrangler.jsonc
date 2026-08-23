@@ -2,6 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "aint",
   "main": "src/index.ts",
+  "workers_dev": false,
   "compatibility_date": "2026-08-01",
   "routes": [
     { "pattern": "aintservice.com", "custom_domain": true },

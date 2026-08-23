@@ -15,7 +15,7 @@
       ],
       "success": "A visitor can answer: is it healthy, what is it spending, what has it been doing, what is it working toward",
       "priority": "high",
-      "status": "done",
+      "status": "regressed",
       "source": "human",
       "created": "2026-08-20",
       "done_when": {
@@ -82,7 +82,7 @@
       ],
       "success": "An agent-authored PR created entirely from the Worker, passing signed-commit protection",
       "priority": "high",
-      "status": "blocked-on-human",
+      "status": "done",
       "source": "agent",
       "created": "2026-08-21",
       "done_when": {
@@ -116,7 +116,7 @@
       ],
       "success": "Direct pushes to main rejected; PR path verified end to end",
       "priority": "high",
-      "status": "blocked-on-human",
+      "status": "done",
       "source": "agent",
       "created": "2026-08-21",
       "done_when": {

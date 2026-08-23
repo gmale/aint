@@ -42,7 +42,7 @@
     {
       "id": "OBJ-007",
       "title": "Tool-use harness for open-weight models",
-      "intent": "Decision 006: the harness is the product. Strict JSON tool protocol, bounded steps, deterministic validation with repair prompts — measure whether verified free models can complete multi-step tasks through it",
+      "intent": "Decision 006: the harness is the product. Strict JSON tool protocol, bounded steps, deterministic validation with repair prompts \u2014 measure whether verified free models can complete multi-step tasks through it",
       "constraints": [
         "open weights only",
         "inference budget",
@@ -78,11 +78,11 @@
       "intent": "Agents need hands: API-created commits are auto-signed by GitHub and satisfy branch protection; requires a scoped credential lease as a Worker secret",
       "constraints": [
         "human-granted lease with expiry",
-        "PR path only — no direct main access"
+        "PR path only \u2014 no direct main access"
       ],
       "success": "An agent-authored PR created entirely from the Worker, passing signed-commit protection",
       "priority": "high",
-      "status": "blocked-on-human",
+      "status": "done",
       "source": "agent",
       "created": "2026-08-21",
       "done_when": {
@@ -116,7 +116,7 @@
       ],
       "success": "Direct pushes to main rejected; PR path verified end to end",
       "priority": "high",
-      "status": "blocked-on-human",
+      "status": "done",
       "source": "agent",
       "created": "2026-08-21",
       "done_when": {

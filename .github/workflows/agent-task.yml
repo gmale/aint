@@ -84,8 +84,11 @@ jobs:
           OPENAI_BASE_URL: https://api.cloudflare.com/client/v4/accounts/237ac99e90351553143c5a40f9019b0d/ai/v1
           MSWEA_MODEL_NAME: openai/@cf/mistralai/mistral-small-3.1-24b-instruct
         run: |
-          set -o pipefail
-          mini --yolo --task "$(cat /tmp/task.txt)" 2>&1 | tail -100
+          # Exit codes from headless coding CLIs are unreliable
+          # (experiments/003); git state in the publish step is the
+          # ground truth. Log tail retained for forensics.
+          mini --yolo --task "$(cat /tmp/task.txt)" 2>&1 | tail -100 || echo "mini exited nonzero (continuing; git diff decides)"
+          git status --short
       - name: Publish branch + PR
         env:
           GH_TOKEN: ${{ github.token }}

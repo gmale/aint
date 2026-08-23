@@ -23,8 +23,23 @@ interface Objective {
   [k: string]: unknown;
 }
 
+const OWN_HOSTS = ["aintservice.com", "www.aintservice.com", "aint.aint-app.workers.dev"];
+
 async function probe(env: Env, check: DoneWhen): Promise<{ pass: boolean; observed: string }> {
   try {
+    // A Worker cannot fetch itself through its own hostname (first
+    // curator run: false "regression" via status 522). Self-probes on
+    // /api/health dispatch directly.
+    const url = new URL(check.url);
+    if (OWN_HOSTS.includes(url.hostname) && url.pathname === "/api/health") {
+      const { healthReport } = await import("./health");
+      const report = await healthReport("https://curator.internal", env);
+      let value: unknown = report as unknown;
+      for (const key of (check.path ?? "status").split(".")) {
+        value = (value as Record<string, unknown> | undefined)?.[key];
+      }
+      return { pass: String(value) === String(check.expect), observed: String(value).slice(0, 80) };
+    }
     const headers: Record<string, string> = { "user-agent": "aint-curator" };
     if (check.url.startsWith("https://api.github.com/") && githubConfigured(env)) {
       headers.authorization = `Bearer ${env.GITHUB_TOKEN_AINT.trim()}`;

@@ -1,7 +1,7 @@
 {
   "_meta": {
     "description": "AINT objectives registry (M1 seed). Git-versioned: changes arrive via reviewed commits from humans or agents through the same path. ORGANIZATION.md is the schema's source of intent; M2 will move live state into organizational memory with this file as the auditable seed. done_when = deterministic probe (url + optional dot-path + expected value/status) evaluated hourly by the curator, which reconciles drift via PR.",
-    "updated": "2026-08-22"
+    "updated": "2026-08-23"
   },
   "objectives": [
     {
@@ -64,13 +64,10 @@
       ],
       "success": "Console conversation requires your login; public read surfaces unchanged",
       "priority": "high",
-      "status": "blocked-on-human",
+      "status": "done",
       "source": "agent",
       "created": "2026-08-21",
-      "done_when": {
-        "url": "https://aintservice.com/api/threads",
-        "expect": 302
-      }
+      "evidence": "Human end-to-end test 2026-08-23: incognito -> CF login on both hostnames; authenticated -> full content; www 301s to apex. Ongoing regression check needs external vantage (#41) \u2014 self-probe cannot see edge Access."
     },
     {
       "id": "OBJ-009",

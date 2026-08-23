@@ -61,8 +61,8 @@ jobs:
           # litellm-style OpenAI-compatible routing through AI Gateway
           # (keeps prompt/response logging in-account, decision 003).
           OPENAI_API_KEY: ${{ secrets.CF_AI_TOKEN }}
-          OPENAI_BASE_URL: https://gateway.ai.cloudflare.com/v1/237ac99e90351553143c5a40f9019b0d/aint/compat
-          MSWEA_MODEL_NAME: openai/workers-ai/@cf/mistralai/mistral-small-3.1-24b-instruct
+          OPENAI_BASE_URL: https://api.cloudflare.com/client/v4/accounts/237ac99e90351553143c5a40f9019b0d/ai/v1
+          MSWEA_MODEL_NAME: openai/@cf/mistralai/mistral-small-3.1-24b-instruct
         run: |
           set -o pipefail
           mini --yolo --task "$(cat /tmp/task.txt)" 2>&1 | tail -100

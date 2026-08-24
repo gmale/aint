@@ -1,7 +1,7 @@
 # Activating the Actions coding peripheral (decision 009)
 
 Blocked-on-human checklist — each item is a lease-pattern credential or a one-time setting:
-
+4. **Pilot run**: create an issue whose body is a small, bounded task ("add a --version flag to scripts/gen-build-info.mjs and document it"), label it `agent-task`, watch the Actions run, review the PR. Note that the pilot succeeded (PR #52) and merges are now signed via createCommitOnBranch. **Squash-merge only** (branch commits are unsigned; main requires signed).
 1. **Mint a Workers AI API token** (dashboard → My Profile → API Tokens → Create → Custom): permission `Account | Workers AI | Read` (the compat endpoint runs inference under Read), account-scoped, ~120-day expiry. Never paste into chat.
 2. **Store it as a repo Actions secret** (terminal): `gh secret set CF_AI_TOKEN -R gmale/aint` (paste at prompt). Ledger entry D-series on completion.
 3. ~~tools pass-through check~~ DONE 2026-08-23 (compat-check run): tools array passes through; mistral returns proper tool_calls; compat usage includes platform-measured neurons. Gateway compat URL 401s (auth mode) — pilot uses direct endpoint.

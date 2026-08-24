@@ -54,6 +54,25 @@ export async function probe(env: Env, typeName: string | null): Promise<unknown>
   return r.errors ?? { aiRelatedDatasets: fields };
 }
 
+/**
+ * Rolling-24h platform-measured neurons across ALL consumers/paths
+ * (Worker binding + Actions compat) — the number the platform actually
+ * enforces its rolling quota against. Cached via the caller.
+ */
+export async function platformRolling24h(env: Env): Promise<number | null> {
+  const decision = checkAction({ class: "platform-read", detail: "rolling-neurons" });
+  if (!decision.allowed) return null;
+  const since = new Date(Date.now() - 24 * 3600_000).toISOString();
+  const query = `query($t: String!, $d: Time!) { viewer { accounts(filter: {accountTag: $t}) {
+    usage: aiInferenceAdaptiveGroups(limit: 500, filter: {datetimeHour_geq: $d}) { sum { totalNeurons } }
+  } } }`;
+  const r = await gql(env, query, { t: ACCOUNT_TAG, d: since });
+  if (r.errors?.length) return null;
+  const accounts = (r.data as { viewer?: { accounts?: Array<{ usage?: Array<{ sum?: { totalNeurons?: number } }> }> } })
+    ?.viewer?.accounts;
+  return (accounts?.[0]?.usage ?? []).reduce((a, g) => a + (g.sum?.totalNeurons ?? 0), 0);
+}
+
 export interface ReconcileResult {
   ok: boolean;
   kind: string;

@@ -9,6 +9,8 @@
 import { POLICY } from "./policy";
 import { counterStub } from "./telemetry";
 
+let rollingCache: { value: number | null; at: number } = { value: null, at: 0 };
+
 export interface EnvelopeLine {
   resource: string;
   used: number;
@@ -35,9 +37,21 @@ export async function envelopeReport(env: Env) {
     source,
   });
 
+  if (Date.now() - rollingCache.at > 10 * 60_000) {
+    const { platformRolling24h } = await import("./reconcile");
+    rollingCache = { value: await platformRolling24h(env).catch(() => null), at: Date.now() };
+  }
   const lines = [
     line("worker_requests_day", requests, 100_000, "platform limit, verified experiments/000 §1"),
-    line("neurons_day", neuronsMilli / 1000, 10_000, "platform limit §4; seam estimate, reconciled daily"),
+    line(
+      "neurons_rolling_24h",
+      rollingCache.value ?? -1,
+      10_000,
+      rollingCache.value === null
+        ? "PLATFORM TRUTH UNAVAILABLE (analytics query failed) — quota state unknown"
+        : "platform-measured, ALL consumers incl. Actions peripheral; the quota is a rolling window (reports/2026-08-24)",
+    ),
+    line("neurons_day_seam", neuronsMilli / 1000, 10_000, "Worker-path seam estimate only — undercounts compat path ~80x (#39)"),
     line("model_calls_day", modelCalls, POLICY.dailyInferenceBudget, `policy v${POLICY.version} budget`),
     line("messages_day", messages, POLICY.dailyMessageBudget, `policy v${POLICY.version} budget`),
     line("agent_prs_day", prs, POLICY.dailyPrBudget, `policy v${POLICY.version} budget`),

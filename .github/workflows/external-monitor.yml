@@ -1,0 +1,47 @@
+# External synthetic monitor (#41): the outside vantage the curator's
+# 522 false-positive proved necessary. Disagreement between external
+# observation and internal health becomes a filed issue.
+name: external-monitor
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe public surfaces from outside
+        id: probe
+        run: |
+          FAIL=""
+          for path in "/" "/api/health" "/api/envelope"; do
+            CODE=$(curl -s -o /tmp/body -w "%{http_code}" --max-time 15 "https://aintservice.com$path" || echo 000)
+            echo "$path -> $CODE"
+            [ "$CODE" = "200" ] || FAIL="$FAIL $path=$CODE"
+          done
+          STATUS=$(jq -r .status /tmp/../tmp/health.json 2>/dev/null || true)
+          CODE=$(curl -s -o /tmp/health.json -w "%{http_code}" --max-time 15 https://aintservice.com/api/health || echo 000)
+          if [ "$CODE" = "200" ]; then
+            INTERNAL=$(jq -r .status /tmp/health.json)
+            [ "$INTERNAL" = "ok" ] || FAIL="$FAIL internal-status=$INTERNAL"
+          fi
+          echo "failures=${FAIL# }" >> "$GITHUB_OUTPUT"
+      - name: File issue on disagreement (deduped)
+        if: steps.probe.outputs.failures != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          EXISTING=$(gh issue list -R ${{ github.repository }} --state open --search "external-monitor in:title" --json number --jq length)
+          if [ "$EXISTING" = "0" ]; then
+            gh issue create -R ${{ github.repository }} \
+              --title "external-monitor: public surface failing (${{ steps.probe.outputs.failures }})" \
+              --body "Filed autonomously by the external synthetic monitor (outside vantage, #41). Observed: ${{ steps.probe.outputs.failures }} at $(date -u +%FT%TZ). Internal health may disagree — that disagreement is the signal (see curator PR #32 lesson). Check Workers Builds deploys, Access config, and Cloudflare status before code." \
+              --label agent-task
+          else
+            echo "open monitor issue exists; not duplicating"
+          fi

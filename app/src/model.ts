@@ -37,7 +37,8 @@ export const DEFAULT_MODEL = "@cf/ibm-granite/granite-4.0-h-micro";
  */
 export const AI_GATEWAY_ID = "aint";
 const NEURONS_PER_USD = 1000 / 0.011;
-const MAX_TOKENS_CAP = 256;
+const DEFAULT_MAX_TOKENS = 256;
+const MAX_TOKENS_CAP = 4096;
 
 export function estimateNeurons(
   model: string,
@@ -109,7 +110,7 @@ export function workersAiProvider(env: Env, model: string = DEFAULT_MODEL): Mode
         model as Parameters<Env["AI"]["run"]>[0],
         {
           messages: [{ role: "user", content: req.prompt }],
-          max_tokens: Math.min(req.maxTokens ?? MAX_TOKENS_CAP, MAX_TOKENS_CAP),
+          max_tokens: Math.min(req.maxTokens ?? DEFAULT_MAX_TOKENS, MAX_TOKENS_CAP),
         },
         { gateway: { id: AI_GATEWAY_ID } },
       )) as Record<string, unknown>;

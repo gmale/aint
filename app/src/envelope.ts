@@ -19,7 +19,7 @@ export interface EnvelopeLine {
   source: string;
 }
 
-export async function envelopeReport(env: Env) {
+export async function envelopeReport(env: Env, fresh = false) {
   const stub = counterStub(env);
   const [requests, modelCalls, neuronsMilli, messages, prs] = await Promise.all([
     stub.todayCount("requests"),
@@ -37,7 +37,8 @@ export async function envelopeReport(env: Env) {
     source,
   });
 
-  if (Date.now() - rollingCache.at > 10 * 60_000) {
+  const maxAge = fresh ? 60_000 : 10 * 60_000; // fresh: still 60s cooldown vs analytics-API hammering
+  if (Date.now() - rollingCache.at > maxAge) {
     const { platformRolling24h } = await import("./reconcile");
     rollingCache = { value: await platformRolling24h(env).catch(() => null), at: Date.now() };
   }

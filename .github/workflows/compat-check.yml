@@ -22,6 +22,17 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.CF_AI_TOKEN }}" -H "Content-Type: application/json" \
             -d '{"model":"@cf/ibm-granite/granite-4.0-h-micro","messages":[{"role":"user","content":"Reply with exactly: ok"}],"max_tokens":10}')
           echo "direct_compat_status=$CODE"; head -c 400 /tmp/r.json; echo
+      - name: Prompt-caching check (#61 lever 4) — identical long prefix twice
+        run: |
+          PREFIX=$(python3 -c "print('You are a careful assistant. Context document: ' + 'The quick brown fox jumps over the lazy dog. '*400)")
+          for i in 1 2; do
+            curl -s --max-time 60 \
+              "https://api.cloudflare.com/client/v4/accounts/237ac99e90351553143c5a40f9019b0d/ai/v1/chat/completions" \
+              -H "Authorization: Bearer ${{ secrets.CF_AI_TOKEN }}" -H "Content-Type: application/json" \
+              -d "$(python3 -c "import json,sys; print(json.dumps({'model':'@cf/mistralai/mistral-small-3.1-24b-instruct','messages':[{'role':'user','content':sys.argv[1]+' Reply with exactly: ok'}],'max_tokens':5}))" "$PREFIX")" \
+              | python3 -c "import json,sys; d=json.load(sys.stdin); u=d.get('usage',{}); print('CACHE_CHECK call', '${i}'.strip() or '', 'neurons=',u.get('neurons'),'cached=',u.get('prompt_tokens_details',{}).get('cached_tokens'),'prompt=',u.get('prompt_tokens'))"
+            sleep 3
+          done
       - name: Direct compat — tools pass-through (mistral)
         run: |
           CODE=$(curl -s -o /tmp/r.json -w "%{http_code}" \

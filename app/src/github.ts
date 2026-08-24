@@ -135,6 +135,18 @@ export async function authorPullRequest(env: Env, req: PrRequest): Promise<PrRes
  * experiments/002). Runs from the hourly heartbeat; idempotent via
  * branch existence.
  */
+/** Read one repo file from main via the broker (bounded). */
+export async function readRepoFile(env: Env, path: string): Promise<string> {
+  const res = await fetch(`${API}/repos/${REPO}/contents/${encodeURIComponent(path).replace(/%2F/g, "/")}`, {
+    headers: headers(env),
+  });
+  if (!res.ok) throw new Error(`read ${path}: ${res.status}`);
+  const data = (await res.json()) as { content?: string; encoding?: string };
+  if (!data.content || data.encoding !== "base64") throw new Error(`unexpected shape for ${path}`);
+  const text = new TextDecoder().decode(Uint8Array.from(atob(data.content.replace(/\n/g, "")), (c) => c.charCodeAt(0)));
+  return text.length > 20_000 ? text.slice(0, 20_000) + "\n[TRUNCATED at 20KB]" : text;
+}
+
 const ISSUE_DAILY_CAP = 10;
 
 /** File an issue via the broker (Issues:RW granted 2026-08-23, #42). */

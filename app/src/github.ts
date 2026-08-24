@@ -135,6 +135,29 @@ export async function authorPullRequest(env: Env, req: PrRequest): Promise<PrRes
  * experiments/002). Runs from the hourly heartbeat; idempotent via
  * branch existence.
  */
+const ISSUE_DAILY_CAP = 10;
+
+/** File an issue via the broker (Issues:RW granted 2026-08-23, #42). */
+export async function createIssue(
+  env: Env,
+  title: string,
+  body: string,
+  labels: string[],
+): Promise<string | null> {
+  const decision = checkAction({ class: "github-write", detail: `issue:${title.slice(0, 40)}` });
+  if (!decision.allowed) return null;
+  const stub = counterStub(env);
+  if ((await stub.todayCount("github_issues")) >= ISSUE_DAILY_CAP) return null;
+  const res = await fetch(`${API}/repos/${REPO}/issues`, {
+    method: "POST",
+    headers: headers(env),
+    body: JSON.stringify({ title, body, labels }),
+  });
+  if (!res.ok) throw new Error(`create issue: ${res.status} ${(await res.text()).slice(0, 120)}`);
+  await stub.increment(["github_issues"]);
+  return ((await res.json()) as { html_url: string }).html_url;
+}
+
 export const FIRST_PR_BRANCH = "agent/obj-007-done";
 
 export async function maybeAuthorFirstPr(env: Env): Promise<void> {

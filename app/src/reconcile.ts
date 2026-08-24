@@ -94,6 +94,23 @@ export async function reconcile(env: Env): Promise<ReconcileResult> {
         : { ok: true, kind: "reconciled", detail: summary };
   }
   await stub.recordEvent("reconciliation", result.kind, result.detail);
+  if (!result.ok && (result.kind === "drift" || result.kind === "query-error")) {
+    // Anomaly -> task routing (#42): the organization files its own work.
+    const { createIssue, githubConfigured } = await import("./github");
+    if (githubConfigured(env)) {
+      try {
+        const url = await createIssue(
+          env,
+          `anomaly: reconciliation ${result.kind}`,
+          `Autonomously filed by the reconciliation routine.\n\n**Observation:** ${result.detail}\n\n**Context for the assignee (agent or human):** seam estimates come from app/src/model.ts estimateNeurons; platform truth via GraphQL aiInferenceAdaptiveGroups (app/src/reconcile.ts). Known open questions: per-path billing discrepancy (compat endpoint >> binding estimates) and quota reset boundary != 00:00 UTC — see issue #39 capsule. Verify before changing budget math.`,
+          ["agent-task"],
+        );
+        if (url) await stub.recordEvent("anomaly-router", "issue-filed", url);
+      } catch (e) {
+        await stub.recordEvent("anomaly-router", "issue-failed", String(e).slice(0, 200));
+      }
+    }
+  }
   return result;
 }
 

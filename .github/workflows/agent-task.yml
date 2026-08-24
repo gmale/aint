@@ -89,16 +89,28 @@ jobs:
           # ground truth. Log tail retained for forensics.
           mini --yolo --task "$(cat /tmp/task.txt)" 2>&1 | tail -100 || echo "mini exited nonzero (continuing; git diff decides)"
           git status --short
-      - name: Publish branch + PR
+      - name: Publish branch + PR (GitHub-signed via createCommitOnBranch)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           if git diff --quiet; then echo "no changes produced"; exit 0; fi
-          git config user.name "aint-actions-agent"
-          git config user.email "agent@aintservice.com"
-          git checkout -b "${{ steps.task.outputs.branch }}"
-          git add -A && git commit -m "agent-task: $(head -c 60 /tmp/task.txt)"
-          git push -u origin "${{ steps.task.outputs.branch }}"
+          BRANCH="${{ steps.task.outputs.branch }}"
+          HEAD=$(gh api repos/${{ github.repository }}/git/ref/heads/main --jq .object.sha)
+          gh api repos/${{ github.repository }}/git/refs -f ref="refs/heads/$BRANCH" -f sha="$HEAD" >/dev/null
+          # Commit every changed/added file through GraphQL so GitHub
+          # signs the commit (satisfies main's signed-commit rule; #53).
+          ADDITIONS="[]"
+          while IFS= read -r F; do
+            [ -f "$F" ] || continue  # deletions unsupported in v1; agent tasks are additive
+            ADDITIONS=$(jq -c --arg p "$F" --arg c "$(base64 -w0 "$F")" '. + [{path:$p, contents:$c}]' <<<"$ADDITIONS")
+          done < <(git diff --name-only; git ls-files --others --exclude-standard)
+          jq -nc --arg repo "${{ github.repository }}" --arg branch "$BRANCH" --arg head "$HEAD" \
+             --arg msg "agent-task: $(head -c 60 /tmp/task.txt)" --argjson adds "$ADDITIONS" \
+             '{query: "mutation($input: CreateCommitOnBranchInput!){ createCommitOnBranch(input:$input){ commit { oid } } }",
+               variables: {input: {branch: {repositoryNameWithOwner: $repo, branchName: $branch},
+                 message: {headline: $msg}, expectedHeadOid: $head,
+                 fileChanges: {additions: $adds}}}}' > /tmp/commit.json
+          gh api graphql --input /tmp/commit.json
           gh pr create --title "agent-task: $(head -c 60 /tmp/task.txt)" \
-            --body "Authored by the Actions-hosted coding peripheral (decision 009). Task source: ${{ github.event_name }}. MERGE VIA SQUASH ONLY (branch commits are unsigned)." \
-            --base main
+            --body "Authored by the Actions-hosted coding peripheral (decision 009). Commit is GitHub-signed (createCommitOnBranch); merges need no bypass." \
+            --base main --head "$BRANCH"

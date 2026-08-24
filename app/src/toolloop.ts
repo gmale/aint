@@ -10,6 +10,7 @@
  * inference per step. All tools are deterministic; three are
  * read-only, one writes a bounded note event.
  */
+import { authorPullRequest, githubConfigured, readRepoFile } from "./github";
 import { workersAiProvider } from "./model";
 import { checkAction, checkInferenceBudget, POLICY } from "./policy";
 import { counterStub, recordModelCall } from "./telemetry";
@@ -55,6 +56,33 @@ const TOOLS: Record<string, ToolSpec> = {
     description: 'add {"a": number, "b": number} -> arithmetic sum',
     async run(_env, args) {
       return String(Number(args.a) + Number(args.b));
+    },
+  },
+  read_repo_file: {
+    description: 'read_repo_file {"path": string} -> contents of a file on main (truncated at 20KB). Use exact paths; do not explore.',
+    async run(env, args) {
+      if (!githubConfigured(env)) return "github broker not configured";
+      return await readRepoFile(env, String(args.path ?? ""));
+    },
+  },
+  submit_edit_pr: {
+    description:
+      'submit_edit_pr {"path": string, "content": string, "title": string} -> replaces one file\'s full contents via a signed PR (protected main; humans/checks merge). Returns the PR URL. Max 48KB.',
+    async run(env, args) {
+      if (!githubConfigured(env)) return "github broker not configured";
+      const path = String(args.path ?? "");
+      const content = String(args.content ?? "");
+      const title = String(args.title ?? "agent edit").slice(0, 70);
+      if (!path || !content || content.length > 48_000) return "invalid path or content (max 48KB)";
+      const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(content)));
+      const pr = await authorPullRequest(env, {
+        branch: `agent-edit/${Date.now()}`,
+        title: `agent-edit: ${title}`,
+        body: "Authored by the Worker-native tool loop (#61 lever: bounded-context editing — no Actions runner, no transcript accumulation). Single-file replacement; review the diff.",
+        commitMessage: `agent-edit: ${title}`,
+        files: [{ path, contentsBase64: b64 }],
+      });
+      return `PR opened: ${pr.url}`;
     },
   },
   record_note: {
@@ -137,14 +165,14 @@ export async function runTask(
     }
     let result;
     try {
-      result = await provider.generate({ prompt, maxTokens: 200 });
+      result = await provider.generate({ prompt, maxTokens: 2000 });
     } catch (e) {
       // Backoff-and-retry once on gateway rate limiting — found the
       // hard way in experiments/002 (an entire model's run zeroed).
       if (/rate limit/i.test(String(e))) {
         await new Promise((r) => setTimeout(r, 2500));
         try {
-          result = await provider.generate({ prompt, maxTokens: 200 });
+          result = await provider.generate({ prompt, maxTokens: 2000 });
         } catch (e2) {
           trace.push({ raw: "", parsed: null, error: String(e2).slice(0, 200) });
           break;

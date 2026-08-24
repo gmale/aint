@@ -206,7 +206,7 @@ async function handleApi(
     }
     case "/api/envelope": {
       const { envelopeReport } = await import("./envelope");
-      return Response.json(await envelopeReport(env));
+      return Response.json(await envelopeReport(env, url.searchParams.has("fresh")));
     }
     case "/api/telemetry": {
       const days = await counterStub(env).snapshot();

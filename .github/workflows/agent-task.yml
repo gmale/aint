@@ -36,6 +36,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      - name: Guard — pacing gate (rolling quota)
+        run: |
+          ROLLING=$(curl -s --max-time 15 "https://aintservice.com/api/envelope?fresh=1" | jq -r '.lines[] | select(.resource=="neurons_rolling_24h") | .used')
+          echo "rolling 24h neurons: ${ROLLING:-unknown}"
+          if [ -z "$ROLLING" ] || [ "$ROLLING" = "-1" ]; then
+            echo "::error::platform quota state unknown — refusing to spend"; exit 1
+          fi
+          if [ "$(printf '%.0f' "$ROLLING")" -gt 5000 ]; then
+            echo "::error::rolling window at $ROLLING > 5000 — pacing gate closed (issue #61: burst overshoot causes day-long lockouts)"; exit 1
+          fi
       - name: Guard — secret present
         run: |
           if [ -z "${{ secrets.CF_AI_TOKEN }}" ]; then
@@ -72,6 +82,9 @@ jobs:
           cfg.setdefault("model", {}).setdefault("model_kwargs", {}).update(
               {"tool_choice": "required", "max_tokens": 1500, "temperature": 0}
           )
+          # Hard step cap (#61): bounds worst-case cost; quadratic growth
+          # means late steps are the expensive ones.
+          cfg.setdefault("agent", {})["step_limit"] = 12
           pathlib.Path("/tmp/mini-cfg.yaml").write_text(yaml.safe_dump(cfg))
           print("wrote /tmp/mini-cfg.yaml from", src[0])
           EOF
@@ -89,6 +102,27 @@ jobs:
           # ground truth. Log tail retained for forensics.
           mini --yolo --task "$(cat /tmp/task.txt)" 2>&1 | tail -100 || echo "mini exited nonzero (continuing; git diff decides)"
           git status --short
+      - name: Report session token usage (trajectory)
+        if: always()
+        run: |
+          T=~/.config/mini-swe-agent/last_mini_run.traj.json
+          if [ -f "$T" ]; then
+            python3 -c "
+          import json,sys
+          d=json.load(open('$T'.replace('~','$HOME')))
+          def walk(o):
+              if isinstance(o,dict):
+                  u=o.get('usage')
+                  if isinstance(u,dict): yield u
+                  for v in o.values(): yield from walk(v)
+              elif isinstance(o,list):
+                  for v in o: yield from walk(v)
+          pt=ct=0
+          for u in walk(d):
+              pt+=u.get('prompt_tokens',0) or 0; ct+=u.get('completion_tokens',0) or 0
+          print(f'SESSION_TOKENS prompt={pt} completion={ct} total={pt+ct}')
+          " || echo "trajectory parse failed"
+          else echo "no trajectory file"; fi
       - name: Publish branch + PR (GitHub-signed via createCommitOnBranch)
         env:
           GH_TOKEN: ${{ github.token }}

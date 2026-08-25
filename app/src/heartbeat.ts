@@ -42,6 +42,8 @@ export async function runScheduled(
   await policySelfTest(stub);
   const { runCurator } = await import("./curator");
   await runCurator(env).catch(() => {});
+  const { maybeRunAudition } = await import("./audition");
+  await maybeRunAudition(env, ctx).catch(() => {});
 }
 
 /** Forbidden actions must be denied; record the outcome either way. */

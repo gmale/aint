@@ -78,14 +78,15 @@ jobs:
           # Force tool calls every turn (mistral prose-lapse cure, pilot iter 4):
           # clone the default config and inject model_kwargs via litellm.
           python3 - <<'EOF'
-          import minisweagent, pathlib, yaml
+          import minisweagent, os, pathlib, yaml
           base = pathlib.Path(minisweagent.__file__).parent
           cands = sorted(base.rglob("*.yaml"))
           print("yaml candidates:", [str(c) for c in cands])
           src = [c for c in cands if "mini" in c.name.lower()] or cands
           cfg = yaml.safe_load(src[0].read_text())
           cfg.setdefault("model", {}).setdefault("model_kwargs", {}).update(
-              {"tool_choice": "required", "max_tokens": 1500, "temperature": 0}
+              {"tool_choice": "required", "max_tokens": 1500, "temperature": 0,
+               "extra_headers": {"x-session-affinity": "run-" + os.environ.get("GITHUB_RUN_ID", "0")}}
           )
           # Hard step cap (#61): bounds worst-case cost; quadratic growth
           # means late steps are the expensive ones.
@@ -122,10 +123,11 @@ jobs:
                   for v in o.values(): yield from walk(v)
               elif isinstance(o,list):
                   for v in o: yield from walk(v)
-          pt=ct=0
+          pt=ct=ca=0
           for u in walk(d):
               pt+=u.get('prompt_tokens',0) or 0; ct+=u.get('completion_tokens',0) or 0
-          print(f'SESSION_TOKENS prompt={pt} completion={ct} total={pt+ct}')
+              ca+=((u.get('prompt_tokens_details') or {}).get('cached_tokens') or 0)
+          print(f'SESSION_TOKENS prompt={pt} completion={ct} cached={ca} total={pt+ct}')
           " || echo "trajectory parse failed"
           else echo "no trajectory file"; fi
       - name: Publish branch + PR (GitHub-signed via createCommitOnBranch)

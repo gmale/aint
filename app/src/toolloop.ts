@@ -153,6 +153,7 @@ export async function runTask(
   if (!decision.allowed) return { error: decision.reason, status: 403 };
 
   const provider = workersAiProvider(env, model ?? TOOL_MODEL);
+  const sessionId = `task-${crypto.randomUUID().slice(0, 8)}`;
   const trace: StepTrace[] = [];
   let repairs = 0;
   let neurons = 0;
@@ -165,14 +166,14 @@ export async function runTask(
     }
     let result;
     try {
-      result = await provider.generate({ prompt, maxTokens: 2000 });
+      result = await provider.generate({ prompt, maxTokens: 2000, sessionId });
     } catch (e) {
       // Backoff-and-retry once on gateway rate limiting — found the
       // hard way in experiments/002 (an entire model's run zeroed).
       if (/rate limit/i.test(String(e))) {
         await new Promise((r) => setTimeout(r, 2500));
         try {
-          result = await provider.generate({ prompt, maxTokens: 2000 });
+          result = await provider.generate({ prompt, maxTokens: 2000, sessionId });
         } catch (e2) {
           trace.push({ raw: "", parsed: null, error: String(e2).slice(0, 200) });
           break;

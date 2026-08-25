@@ -54,6 +54,8 @@ export function estimateNeurons(
 export interface GenerateRequest {
   prompt: string;
   maxTokens?: number;
+  /** x-session-affinity key: pins turns to one instance for prefix-cache reuse. */
+  sessionId?: string;
 }
 
 export interface GenerateResult {
@@ -112,7 +114,10 @@ export function workersAiProvider(env: Env, model: string = DEFAULT_MODEL): Mode
           messages: [{ role: "user", content: req.prompt }],
           max_tokens: Math.min(req.maxTokens ?? DEFAULT_MAX_TOKENS, MAX_TOKENS_CAP),
         },
-        { gateway: { id: AI_GATEWAY_ID } },
+        {
+          gateway: { id: AI_GATEWAY_ID },
+          ...(req.sessionId ? { extraHeaders: { "x-session-affinity": req.sessionId } } : {}),
+        } as Parameters<Env["AI"]["run"]>[2],
       )) as Record<string, unknown>;
       const usage = (result.usage ?? {}) as { prompt_tokens?: number; completion_tokens?: number };
       const promptTokens = usage.prompt_tokens ?? null;

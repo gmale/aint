@@ -2,6 +2,7 @@
 
 - **Started:** 2026-08-24 · **Status:** in progress (Phase 0 shipped; measurements pending quota drain)
 - **Baseline (measured):** one mini-swe-agent doc-edit session = **28,856 platform neurons ≈ $0.32 ≈ ~800k tokens**, quadratic transcript growth. Free tier at this shape: ~1 heavy session per 3 rolling days.
+- **CORRECTION (2026-08-24):** the "~80x per-path billing discrepancy" claimed earlier is **retracted** — it was a model-mix arithmetic error (mistral measurements compared against granite-priced estimates). Verified: platform neurons match list prices exactly (85+27-token mistral call → 4.08 computed vs 4.07 measured; ~800k-token session → ~26-29k computed vs 28,856 measured). There is no surcharge; the cost is pure quadratic token volume at advertised rates. Mechanics: stateless serverless inference re-prefills the full transcript every turn (KV cache discarded between requests), unlike a local model whose persistent KV cache makes the same session linear in unique tokens. Prompt caching = renting that persistence; the queued probe determines whether Workers AI discounts cached prefixes.
 - **Targets:** doc benchmark < 3,000 neurons via peripheral; < 100 via Worker loop.
 
 ## Phase 0 — shipped (model-free)

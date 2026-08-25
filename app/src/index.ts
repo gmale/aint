@@ -204,6 +204,12 @@ async function handleApi(
       }
       return Response.json(await reconcile(env));
     }
+    case "/api/audition": {
+      // Public on purpose: model-audition scores only (benign telemetry;
+      // the full event feed stays gated).
+      const events = await counterStub(env).listEvents(200);
+      return Response.json({ audition: events.filter((e) => e.actor === "audition") });
+    }
     case "/api/envelope": {
       const { envelopeReport } = await import("./envelope");
       return Response.json(await envelopeReport(env, url.searchParams.has("fresh")));

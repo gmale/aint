@@ -2,6 +2,7 @@
 // wrangler.jsonc build.command). Uses Workers Builds env vars when
 // present, falls back to local git, then to "unknown".
 // --check flag: print the build-info JSON to stdout WITHOUT writing generated/build-info.ts, then exit 0
+// --version flag: print the version string to stdout and exit 0
 import { execSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -23,6 +24,11 @@ const buildInfo = {
   buildTime: new Date().toISOString(),
   builder: process.env.WORKERS_CI ? "workers-builds" : "local",
 };
+
+if (process.argv.includes("--version")) {
+  console.log("aint-build-info/1.0");
+  process.exit(0);
+}
 
 if (process.argv.includes("--check")) {
   console.log(JSON.stringify(buildInfo, null, 2));

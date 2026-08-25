@@ -46,6 +46,11 @@ jobs:
           if [ "$(printf '%.0f' "$ROLLING")" -gt 5000 ]; then
             echo "::error::rolling window at $ROLLING > 5000 — pacing gate closed (issue #61: burst overshoot causes day-long lockouts)"; exit 1
           fi
+          # Canary: enforcement and analytics meters can diverge (2026-08-25);
+          # only the enforcement layer's own answer is trustworthy.
+          T=$(curl -s --max-time 60 -X POST https://aintservice.com/api/generate -H "content-type: application/json" -d '{"prompt":"Reply with exactly: ok"}' | head -c 200)
+          echo "canary: $T"
+          echo "$T" | grep -q '"text"' || { echo "::error::inference canary failed — enforcement meter still closed"; exit 1; }
       - name: Guard — secret present
         run: |
           if [ -z "${{ secrets.CF_AI_TOKEN }}" ]; then
